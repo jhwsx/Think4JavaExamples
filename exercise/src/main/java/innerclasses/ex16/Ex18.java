@@ -1,4 +1,4 @@
-package innerclasses.ex15;
+package innerclasses.ex16;
 
 /**
  * <pre>
