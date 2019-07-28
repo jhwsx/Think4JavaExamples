@@ -1,11 +1,11 @@
-package innerclasses;
+package innerclasses.ex22;
 
 /**
  * <pre>
  *     author : wangzhichao
  *     e-mail : wangzhichao@adups.com
- *     time   : 2019/07/23
- *     desc   : 迭代器模式
+ *     time   : 2019/07/28
+ *     desc   :
  *     version: 1.0
  * </pre>
  */
@@ -16,6 +16,7 @@ interface Selector {
 
     void next();
 }
+
 public class Sequence {
     private Object[] items;
     private int next = 0;
@@ -50,8 +51,33 @@ public class Sequence {
         }
     }
 
+    private class ReverseSelector implements Selector {
+        private int i = items.length - 1;
+
+        @Override
+        public boolean end() {
+            return i == -1;
+        }
+
+        @Override
+        public Object current() {
+            return items[i];
+        }
+
+        @Override
+        public void next() {
+            if (i > -1) {
+                i--;
+            }
+        }
+    }
+
+
     public Selector selector() {
         return new SequenceSelector();
+    }
+    public Selector reverseSelector() {
+        return new ReverseSelector();
     }
 
     public static void main(String[] args) {
@@ -63,6 +89,12 @@ public class Sequence {
         while (!selector.end()) {
             System.out.println(selector.current());
             selector.next();
+        }
+        System.out.println("-------------------------");
+        Selector reverseSelector = sequence.reverseSelector();
+        while (!reverseSelector.end()) {
+            System.out.println(reverseSelector.current());
+            reverseSelector.next();
         }
     }
 }
