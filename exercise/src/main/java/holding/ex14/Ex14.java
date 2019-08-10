@@ -13,13 +13,18 @@ import java.util.ListIterator;
  * </pre>
  */
 public class Ex14 {
-    public static void main(String[] args) {
-        LinkedList<Integer> linkedList = new LinkedList<>();
-        for (int i = 0; i < 5; i++) {
-            ListIterator<Integer> listIterator = linkedList.listIterator(linkedList.size() / 2);
-            listIterator.add(i);
 
+    private static void addMiddle(LinkedList<Integer> l, Integer[] ia) {
+        for (Integer i : ia) {
+            ListIterator<Integer> it = l.listIterator(l.size() / 2);
+            it.add(i);
+            System.out.println(l);
         }
-        System.out.println(linkedList);
+    }
+
+    public static void main(String[] args) {
+        LinkedList<Integer> li = new LinkedList<>();
+        Integer[] x = {0, 1, 2, 3, 4, 5, 6, 7};
+        Ex14.addMiddle(li, x);
     }
 }
