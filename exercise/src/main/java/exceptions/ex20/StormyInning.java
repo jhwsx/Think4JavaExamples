@@ -1,4 +1,4 @@
-package exceptions;
+package exceptions.ex20;
 
 class BaseballException extends Exception {
 }
@@ -37,6 +37,8 @@ interface Storm {
     public void rainHard() throws RainedOut;
 }
 
+class UmpireArgument extends Exception {}
+
 public class StormyInning extends Inning implements Storm {
     // 可以给构造器添加新的异常，但必须先处理基类构造器的异常
     public StormyInning() throws RainedOut, BaseballException {
@@ -70,6 +72,8 @@ public class StormyInning extends Inning implements Storm {
     public void atBat() throws PopFoul {} // 覆写的方法可以抛派生出的异常
 
 //    public void atBat() throws Strike, Foul, PopFoul {}
+
+    public void judge() throws UmpireArgument {}
     public static void main(String[] args) {
         try {
             StormyInning si = new StormyInning();
@@ -112,6 +116,17 @@ public class StormyInning extends Inning implements Storm {
             rainedOut.printStackTrace();
         } catch (BaseballException e) {
             e.printStackTrace();
+        }
+
+        try {
+            StormyInning stormyInning = new StormyInning();
+            stormyInning.judge();
+        } catch (RainedOut rainedOut) {
+            rainedOut.printStackTrace();
+        } catch (BaseballException e) {
+            e.printStackTrace();
+        } catch (UmpireArgument umpireArgument) {
+            umpireArgument.printStackTrace();
         }
     }
 }
