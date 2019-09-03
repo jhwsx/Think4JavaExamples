@@ -1,4 +1,4 @@
-package strings;
+package strings.ex02;
 
 import android.support.annotation.NonNull;
 
