@@ -17,7 +17,7 @@ public class Splitting {
     }
     public static void main(String[] args) {
         split(" ");
-        split("\\W+");
-        split("n\\W+");
+        split("\\W+"); // \W 表示非单词字符，前面再加一个\是转义的意思；+表示一次或多次
+        split("n\\W+"); // 字母n后面跟着一个或多个非单词字符
     }
 }
