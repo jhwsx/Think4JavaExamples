@@ -23,7 +23,7 @@ public class Groups {
 
     public static void main(String[] args) {
         Matcher m =
-                Pattern.compile("(^[a-z]|\\s+[a-z])\\w+") // ^ 表示一行的起始，[a-z] 从 a 到 z 的任意字符，\\s+ 表示一个或者多个空白字符，\\w+ 表示一个或者多个单词字符。
+                Pattern.compile("(^[a-z]|\\s+[a-z])\\w+") // ^ 表示一行的起始，[a-z] 从 a 到 z 的任意字符，\\s+ 表示一个或者多个空白字符，\\w+ 表示一个或者多个单词字符,如果不写 \\w+ 那么只能匹配一个字符。
                         .matcher(POEM);
         int groupCount = m.groupCount();
         System.out.println("该匹配器的模式中的分组数目，第0组不包括在内：groupCount = " + groupCount);
