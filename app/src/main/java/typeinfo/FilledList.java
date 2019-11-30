@@ -1,7 +1,5 @@
 package typeinfo;
 
-import android.support.annotation.NonNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +13,6 @@ class CountedInteger {
     private static long counter;
     private final long id = counter++;
 
-    @NonNull
     @Override
     public String toString() {
         return Long.toString(id);

@@ -1,12 +1,10 @@
 package strings;
 
-import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class InfiniteRecursion {
-    @NonNull
     @Override
     public String toString() {
         return " InfiniteRecursion address: " + this + "\n";
