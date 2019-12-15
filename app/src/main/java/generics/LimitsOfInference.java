@@ -1,53 +1,26 @@
 package generics;
 
+import net.mindview.util.New;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+
+import typeinfo.pets.Person;
+import typeinfo.pets.Pet;
 
 /**
  * @author wangzhichao
  * @since 2019/12/09
  */
-
-class ConsumingTask extends Thread {
-
-    interface Callback {
-        void onFinished();
-    }
-
-    public void setCb(Callback cb) {
-        this.cb = cb;
-    }
-
-    private Callback cb;
-    @Override
-    public void run() {
-        super.run();
-        System.out.println("ConsumingTask start: " + System.currentTimeMillis());
-        try {
-            Thread.sleep(5000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("ConsumingTask end: " + System.currentTimeMillis());
-        cb.onFinished();
-    }
-}
-
 public class LimitsOfInference {
+    static void f(Map<Person, List< ? extends Pet>> petPeople) {
+
+    }
+
     public static void main(String[] args) {
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        ConsumingTask consumingTask = new ConsumingTask();
-        consumingTask.setCb(new ConsumingTask.Callback() {
-            @Override
-            public void onFinished() {
-                countDownLatch.countDown();
-            }
-        });
-        consumingTask.start();
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("finish");
+        // 类型推断只对赋值操作有效，其他时候并不起作用。
+        // f(New.map());
     }
 }
