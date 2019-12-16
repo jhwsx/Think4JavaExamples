@@ -1,10 +1,12 @@
-//: net/mindview/util/Sets.java
-package net.mindview.util;
+package generics.ex17;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * 一个实用的 Set 工具
+ * @author wangzhichao
+ * @since 2019/12/16
  */
 public class Sets {
     /**
@@ -15,6 +17,15 @@ public class Sets {
      * @return
      */
     public static <T> Set<T> union(Set<T> a, Set<T> b) {
+        try {
+            if (a instanceof EnumSet) {
+                Set<T> result = ((EnumSet) a).clone();
+                result.addAll(b);
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Set<T> result = new HashSet<T>(a);
         result.addAll(b);
         return result;
@@ -29,6 +40,15 @@ public class Sets {
      */
     public static <T>
     Set<T> intersection(Set<T> a, Set<T> b) {
+        try {
+            if (a instanceof EnumSet) {
+                Set<T> result = ((EnumSet) a).clone();
+                result.retainAll(b);
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Set<T> result = new HashSet<T>(a);
         result.retainAll(b);
         return result;
@@ -44,6 +64,15 @@ public class Sets {
     // Subtract subset from superset:
     public static <T> Set<T>
     difference(Set<T> superset, Set<T> subset) {
+        try {
+            if (superset instanceof EnumSet) {
+                Set<T> result = ((EnumSet) superset).clone();
+                result.removeAll(subset);
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Set<T> result = new HashSet<T>(superset);
         result.removeAll(subset);
         return result;
@@ -60,4 +89,6 @@ public class Sets {
     public static <T> Set<T> complement(Set<T> a, Set<T> b) {
         return difference(union(a, b), intersection(a, b));
     }
+
 } ///:~
+

@@ -50,7 +50,7 @@ public class Staff extends ArrayList<Position> {
                 "Marketing Manager", "Product Manager",
                 "Project Lead", "Software Engineer",
                 "Software Engineer", "Software Engineer",
-                "Software Engineer", "Test Engineer",
+                "Software Engineer", "com.test.Test Engineer",
                 "Technical Writer");
         staff.fillPosition("President",
                 new Person("Me", "Last", "The Top, Lonely At"));

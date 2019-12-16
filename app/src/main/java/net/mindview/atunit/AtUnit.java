@@ -104,7 +104,7 @@ public class AtUnit implements ProcessFiles.Strategy {
         return;
       if(!(m.getReturnType().equals(boolean.class) ||
           m.getReturnType().equals(void.class)))
-        throw new RuntimeException("@Test method" +
+        throw new RuntimeException("@com.test.Test method" +
           " must return boolean or void");
       m.setAccessible(true); // In case it's private, etc.
       add(m);
