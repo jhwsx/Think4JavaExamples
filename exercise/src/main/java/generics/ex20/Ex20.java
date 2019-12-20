@@ -1,5 +1,8 @@
 package generics.ex20;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author wangzhichao
  * @since 2019/12/18
