@@ -1,8 +1,9 @@
 package generics;
 
-import typeinfo.factory.Factory;
 
 /**
+ * 使用显示的工厂
+ *
  * @author wangzhichao
  * @since 2019/12/20
  */
@@ -12,6 +13,7 @@ interface FactoryI<T> {
 
 class Foo2<T> {
     private T x;
+
     public <F extends FactoryI<T>> Foo2(F factory) {
         x = factory.create();
     }
@@ -34,6 +36,7 @@ class Widget {
         }
     }
 }
+
 public class FactoryConstraint {
     public static void main(String[] args) {
         new Foo2<Integer>(new IntegerFactory());

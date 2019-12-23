@@ -1,8 +1,10 @@
 package generics;
 
 /**
+ * Erased.java 中使用 new 对象的方式创建泛型类型对象是不行的
+ *
  * 创建类型实例
- * 使用了类型标签
+ * 这里使用工厂方法，并使用了类型标签
  *
  * @author wangzhichao
  * @since 2019/12/20

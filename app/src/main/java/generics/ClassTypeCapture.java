@@ -1,6 +1,8 @@
 package generics;
 
 /**
+ * 泛型使用 instanceof 是不可以的
+ * 这里使用类型标签，并使用动态的 isInstance() 方法来判断
  * @author wangzhichao
  * @since 2019/12/20
  */
