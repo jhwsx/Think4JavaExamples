@@ -18,7 +18,7 @@ class BerylliumSphere {
     }
 }
 
-public class ContainerCompparison {
+public class ContainerComparison {
     public static void main(String[] args) {
         //数组
         BerylliumSphere[] spheres = new BerylliumSphere[10];
