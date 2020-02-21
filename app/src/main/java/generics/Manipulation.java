@@ -11,7 +11,8 @@ class Manipulator<T> {
     }
     public void manipulate() {
         System.out.println(obj.getClass().getSimpleName()); // 这段打印出来是 HasF。
-        // 不能理解 f() 方法, 如果是 C++ 代码，这段就可以编译通过
+        // 由於泛型擦除，Java編譯器無法將 manipulate() 必須能夠在 obj 上調用 f() 這一需求隱射到
+        // HasF 擁有 f() 這一事實上。
 //        obj.f();
     }
 }
