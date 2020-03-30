@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 
 /**
+ * 注意 submit 和 execute 的区别：
+ *
+ * <T> Future<T> submit(Callable<T> task);
+ * void execute(Runnable command);
+ *
  * @author wangzhichao
  * @since 2020/3/2
  */
@@ -19,6 +24,7 @@ class TaskWithResult implements Callable<String> {
         return "result of TaskWithResult " + id;
     }
 }
+
 public class CallableDemo {
     public static void main(String[] args) {
         ExecutorService exec = Executors.newCachedThreadPool();
