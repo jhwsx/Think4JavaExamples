@@ -28,7 +28,7 @@ public class InterfaceExtractorProcessor
     public InterfaceExtractorProcessor(AnnotationProcessorEnvironment env) {
         this.env = env;
     }
-
+    // 在 process 方法中，做了核心操作
     @Override
     public void process() {
         for (TypeDeclaration typeDec1 : env.getSpecifiedTypeDeclarations()) {

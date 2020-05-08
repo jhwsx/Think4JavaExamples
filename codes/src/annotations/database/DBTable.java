@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * `@DBTable` 有一个 name 元素，该注解通过这个元素为处理器创建数据库表提供表的名字。
+ * {@code @DBTable} 有一个 name 元素，该注解通过这个元素为处理器创建数据库表提供表的名字。
  *
  * @author wangzhichao
  * @since 2020/4/13
