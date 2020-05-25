@@ -1,4 +1,4 @@
-package annotations.ifix;
+package annotations.ex02;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 
 /**
  * @author wangzhichao
- * @since 2020/5/12
+ * @since 2020/5/15
  */
-@SupportedAnnotationTypes("annotations.ifix.ExtractInterface")
+@SupportedAnnotationTypes("annotations.ex02.ExtractInterface")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class IfaceExtractorProcessor extends AbstractProcessor {
     private ArrayList<Element> interfaceMethods = new ArrayList<>();
@@ -58,6 +58,7 @@ public class IfaceExtractorProcessor extends AbstractProcessor {
 
     /**
      * 生成接口定义
+     *
      * @param interfaceName
      */
     private void writeInterfaceFile(String interfaceName) {
@@ -92,6 +93,7 @@ public class IfaceExtractorProcessor extends AbstractProcessor {
 
     /**
      * 用于生成参数
+     *
      * @param parameters
      * @return
      */
@@ -103,13 +105,3 @@ public class IfaceExtractorProcessor extends AbstractProcessor {
         return "(" + arg + ")";
     }
 }
-
-/*
-(base) wangzhichao@wangzhichao:~/AndroidStudioProjects/Think4JavaExamples/codes/src$ javac annotations/ifix/IfaceExtractorProcessor.java
-(base) wangzhichao@wangzhichao:~/AndroidStudioProjects/Think4JavaExamples/codes/src$ javac -processor annotations.ifix.IfaceExtractorProcessor annotations/ifix/Multiplier.java
- public int multiply(int x, int y)
- public int fortySeven()
- public double timesTen(double arg)
-(base) wangzhichao@wangzhichao:~/AndroidStudioProjects/Think4JavaExamples/codes/src$
-
- */
