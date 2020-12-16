@@ -97,10 +97,16 @@ public class IfaceExtractorProcessor extends AbstractProcessor {
      */
     private String createArgList(
             List<? extends VariableElement> parameters) {
-        String arg = parameters.stream()
-                .map(p -> p.asType() + " " + p.getSimpleName())
-                .collect(Collectors.joining(", "));
-        return "(" + arg + ")";
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0, parametersSize = parameters.size(); i < parametersSize; i++) {
+            VariableElement parameter = parameters.get(i);
+            sb.append(parameter.asType() + " " + parameter.getSimpleName());
+            if (i > 0) {
+                sb.append(", ");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
     }
 }
 

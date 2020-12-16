@@ -1,6 +1,8 @@
 package annotations.ifix;
 
 /**
+ * 把公共方法抽取到一个有用的接口中
+ *
  * @author wangzhichao
  * @since 2020/5/12
  */
