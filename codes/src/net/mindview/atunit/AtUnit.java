@@ -21,12 +21,12 @@ public class AtUnit implements ProcessFiles.Strategy {
   static long testsRun = 0;
   static long failures = 0;
   public static void main(String[] args) throws Exception {
-//    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AUExternalTest.class"};
+    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\codes\\src\\annotations\\HashSetTest.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AtUnitExample1.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AUComposition.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AtUnitExample2.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/HashSetTest.class"};
-    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AtUnitExample3.class"};
+//    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AtUnitExample3.class"};
     ClassLoader.getSystemClassLoader()
       .setDefaultAssertionStatus(true); // Enable asserts
     new ProcessFiles(new AtUnit(), "class").start(args);

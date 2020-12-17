@@ -18,13 +18,13 @@ public class HashSetTest {
         assert testObject.isEmpty();
     }
     @Test
-    void _Contains() {
+    void _contains() {
         testObject.add("one");
         assert testObject.contains("one");
     }
 
     @Test
-    void _Remove() {
+    void _remove() {
         testObject.add("one");
         testObject.remove("one");
         assert testObject.isEmpty();
