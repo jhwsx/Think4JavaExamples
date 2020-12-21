@@ -1,7 +1,12 @@
 //: net/net.net.mindview/atunit/AtUnit.java
 // An annotation-based unit-test framework.
 // {RunByHand}
-package net.mindview.atunit;
+package annotations.ex11;
+
+import net.mindview.atunit.ClassNameFinder;
+import net.mindview.atunit.Test;
+import net.mindview.atunit.TestObjectCleanup;
+import net.mindview.atunit.TestObjectCreate;
 import net.mindview.util.BinaryFile;
 import net.mindview.util.ProcessFiles;
 
@@ -15,16 +20,16 @@ import java.util.List;
 import static net.mindview.util.Print.print;
 import static net.mindview.util.Print.printnb;
 
-public class AtUnit implements ProcessFiles.Strategy {
+public class AtUnitEx implements ProcessFiles.Strategy {
   static Class<?> testClass;
   static List<String> failedTests= new ArrayList<String>();
   static long testsRun = 0;
   static long failures = 0;
   public static void main(String[] args) throws Exception {
-    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\exercise\\src\\annotations\\ex09\\HashMapTest.class"};
+    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\exercise\\src\\annotations\\ex11\\HashMapTest.class"};
     ClassLoader.getSystemClassLoader()
       .setDefaultAssertionStatus(true); // Enable asserts
-    new ProcessFiles(new AtUnit(), "class").start(args);
+    new ProcessFiles(new AtUnitEx(), "class").start(args);
     if(failures == 0)
       print("OK (" + testsRun + " tests)");
     else {
@@ -71,6 +76,10 @@ public class AtUnit implements ProcessFiles.Strategy {
     }
     for(Method m : testMethods) {
       printnb("  . " + m.getName() + " ");
+      if (m.isAnnotationPresent(TestNote.class)) {
+        TestNote testNote = m.getAnnotation(TestNote.class);
+        print("Note: " + testNote.note());
+      }
       try {
         Object testObject = createTestObject(creator);
         boolean success = false;

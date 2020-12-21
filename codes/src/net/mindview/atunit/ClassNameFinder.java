@@ -15,9 +15,9 @@ public class ClassNameFinder {
       DataInputStream data = new DataInputStream(
         new ByteArrayInputStream(classBytes));
       int magic = data.readInt();  // 0xcafebabe
-      int minorVersion = data.readShort();
-      int majorVersion = data.readShort();
-      int constant_pool_count = data.readShort();
+      int minorVersion = data.readShort(); // 版本信息
+      int majorVersion = data.readShort(); // 版本信息
+      int constant_pool_count = data.readShort(); // 程序中的常量数目
       int[] constant_pool = new int[constant_pool_count];
       for(int i = 1; i < constant_pool_count; i++) {
         int tag = data.read();
