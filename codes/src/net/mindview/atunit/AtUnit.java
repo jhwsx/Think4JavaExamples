@@ -21,7 +21,7 @@ public class AtUnit implements ProcessFiles.Strategy {
   static long testsRun = 0;
   static long failures = 0;
   public static void main(String[] args) throws Exception {
-    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\codes\\src\\annotations\\HashSetTest.class"};
+    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\codes\\src\\annotations\\AtUnitExample4.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AtUnitExample1.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AUComposition.class"};
 //    args = new String[]{"/home/wangzhichao/AndroidStudioProjects/Think4JavaExamples/out/production/codes/annotations/AtUnitExample2.class"};

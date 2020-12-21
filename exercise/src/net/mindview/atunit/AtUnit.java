@@ -21,7 +21,7 @@ public class AtUnit implements ProcessFiles.Strategy {
   static long testsRun = 0;
   static long failures = 0;
   public static void main(String[] args) throws Exception {
-    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\exercise\\src\\annotations\\ex04\\AtUnitExample1.class"};
+    args = new String[]{"I:\\AndroidProjects\\Think4JavaExamples\\exercise\\src\\annotations\\ex07\\LinkedListTest.class"};
     ClassLoader.getSystemClassLoader()
       .setDefaultAssertionStatus(true); // Enable asserts
     new ProcessFiles(new AtUnit(), "class").start(args);

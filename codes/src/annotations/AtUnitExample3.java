@@ -4,7 +4,7 @@ import net.mindview.atunit.Test;
 import net.mindview.atunit.TestObjectCreate;
 
 /**
- * 没有默认的构造器
+ * 没有默认的构造器, 就需要一个 static 方法专门负责构造对象
  *
  * @author wangzhichao
  * @since 2020/5/14
