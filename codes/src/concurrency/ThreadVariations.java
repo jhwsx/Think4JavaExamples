@@ -3,7 +3,7 @@ package concurrency;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 线程的变行
+ * 线程的变形
  * // 使用命名的内部类
  * // 使用匿名内部类
  * // 使用命名的 Runnable 实现

@@ -1,6 +1,8 @@
 package concurrency;
 
 /**
+ * 演示了线程是程序的不同的执行路径。
+ *
  * @author wangzhichao
  * @since 2020/3/2
  */

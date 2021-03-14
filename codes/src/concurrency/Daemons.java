@@ -23,7 +23,7 @@ class Daemon implements Runnable {
             System.out.println("t[" + i + "].isDaemon() = " +
                     tArray[i].isDaemon() + ". ");
         }
-        // 为什么调用 Thread.yield()???
+        // 为什么调用 Thread.yield()??? 为了把控制权交给其他线程。
         while (true) {
             Thread.yield();
         }

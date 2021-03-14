@@ -3,9 +3,13 @@ package concurrency.ex02;
 /**
  * 这个例子有线程同步问题
  *
+ * 所有的数字都会打印出来，但是主要问题打印出的序列会错乱。一个斐波那契数列还没打印完毕，就切到另一个斐波那契数列数列的打印。
+ *
+ * 解决办法是：run() 方法里面加上同步代码块 synchronized(FibonacciRunnable.class)
  * @author wangzhichao
  * @since 2020/3/2
  */
+// 这个任务用于产生由 n 个斐波那契数字组成的序列
 class FibonacciRunnable implements Runnable {
     private int count = 0;
 

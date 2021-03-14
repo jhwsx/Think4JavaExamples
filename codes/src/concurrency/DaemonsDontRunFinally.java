@@ -13,7 +13,7 @@ class ADaemon implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println("Starting ADaemon");
+            System.out.println("Starting ADaemon"); // 书上可以打出这行，我怎么打不出来啊？
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             System.out.println("Exiting via InterruptedException");

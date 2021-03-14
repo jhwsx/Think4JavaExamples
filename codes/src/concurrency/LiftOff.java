@@ -1,6 +1,8 @@
 package concurrency;
 
 /**
+ * Runnable 接口是描述任务的方式
+ *
  * @author wangzhichao
  * @since 2020/3/2
  */
@@ -21,8 +23,10 @@ public class LiftOff implements Runnable {
     }
     @Override
     public void run() {
+        System.out.println(Thread.currentThread().getName());
         while (countDown-- > 0) {
             System.out.print(status());
+            // Thread.yield() 的作用是给线程调度器一个建议：把时间片切换给其他任务吧。
             Thread.yield();
         }
     }

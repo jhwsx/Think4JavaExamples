@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * 会预先创建有限的线程集
+ *
  * @author wangzhichao
  * @since 2020/3/2
  */

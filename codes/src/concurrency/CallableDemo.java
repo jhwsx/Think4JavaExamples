@@ -21,6 +21,7 @@ class TaskWithResult implements Callable<String> {
 
     @Override
     public String call() throws Exception {
+        Thread.sleep(5000L);
         return "result of TaskWithResult " + id;
     }
 }
@@ -35,8 +36,10 @@ public class CallableDemo {
         for (Future<String> fs : results) {
             try {
                 // fs.isDone() 查询 Future 是否已经完成，它不阻塞。
-                // get() 是阻塞的
-                System.out.println(fs.get());
+                // get() 是阻塞的，直到完成：
+                //if (fs.isDone()) {
+                    System.out.println(fs.get());
+                //}
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 return;

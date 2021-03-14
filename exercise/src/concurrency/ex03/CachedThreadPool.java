@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * 会创建与所需数量相同的线程
  * @author wangzhichao
  * @since 2020/3/2
  */

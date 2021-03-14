@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * 这就是线程数量为 1 的 线程池
+ *
  * @author wangzhichao
  * @since 2020/3/2
  */
