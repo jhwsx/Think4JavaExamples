@@ -3,7 +3,7 @@ package concurrency;
 /**
  * int 类型数据的生成器类
  * <p>
- * 这里没有实现自 Generator 接口，这是因为这里必须要返回一个 int 类型的返回值。
+ * 这里没有实现自 Generator 接口，这是因为这里必须要返回一个 int 类型的返回值，而泛型不支持基本类型的参数。
  * 这里还包含了设置 cancel 以及读取 cancel 的方法。
  *
  * @author wangzhichao

@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadFactory;
 
 }
 
-class MyUncaughtExceptionHander implements Thread.UncaughtExceptionHandler {
+class MyUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
@@ -36,7 +36,7 @@ class HandlerThreadFactory implements ThreadFactory {
         System.out.println("created: " + thread);
         // 给每条线程都附加一个异常处理器，当异常发生时 JVM 会调用 dispatchUncaughtException 方法，
         // 在这个方法里面，就会调用异常处理器的 uncaughtException 方法。
-        thread.setUncaughtExceptionHandler(new MyUncaughtExceptionHander());
+        thread.setUncaughtExceptionHandler(new MyUncaughtExceptionHandler());
         System.out.println("eh: " + thread.getUncaughtExceptionHandler());
         return thread;
     }

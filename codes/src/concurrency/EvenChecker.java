@@ -25,7 +25,7 @@ public class EvenChecker implements Runnable {
             // 获取数字
             int value = gp.next();
             System.out.println(Thread.currentThread().getName() + ", value = " + value);
-            if (value % 2 != 0) {
+            if (value % 2 != 0) { // 检查 value 是否是偶数？
                 // 不是个偶数
                 System.out.println(value + " not even");
                 // TODO 任务依赖于非任务对象，消除了潜在的竞争条件。为什么？

@@ -30,7 +30,7 @@ public class AttemptLocking {
     public void timed() {
         boolean captured = false;
         try {
-            // 如果锁在 2 秒的时间内空闲，并且当前线程未中断，则获取锁
+            // 如果锁在 2 秒的等待时间内空闲，并且当前线程未中断，则获取锁
             captured = lock.tryLock(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -57,7 +57,7 @@ public class AttemptLocking {
 
             @Override
             public void run() {
-                al.lock.lock();
+                al.lock.lock(); // 为了让一个单独的线程获取到锁，这样主线程就拿不到锁了。
                 System.out.println("acquired");
             }
         }.start();

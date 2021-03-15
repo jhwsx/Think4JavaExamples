@@ -12,7 +12,7 @@ public class SynchronizedEvenGenerator extends IntGenerator {
     @Override
     public synchronized int next() {
         ++currEvenValue; // 递增不是原子性操作：递增自身需要多个操作，在递增过程中任务可能会被线程挂起。
-        Thread.yield(); // 添加这句代码，表示建议把 CPU 时间片切换给其他任务。
+        Thread.yield(); // 添加这句代码，表示建议把 CPU 时间片切换给其他任务。即便这样，因为一个任务已经获取了锁对象，所以代码只能由这个任务来执行。
         ++currEvenValue;
         // 如果这里发生了异常，那么内置锁将不能释放
 //        if (currEvenValue  > 10000 && currEvenValue < 10009) {
