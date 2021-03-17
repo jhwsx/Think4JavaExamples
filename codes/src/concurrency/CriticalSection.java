@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 同步控制块，也就是同步方法内的部分代码，这段代码也叫临界区，而不是同步控制
  * 整个方法，这有利于性能提升。
  *
+ * 本例使用同步代码块的性能高于使用同步方法的性能
+ *
  * @author wangzhichao
  * @since 2020/3/12
  */
@@ -81,7 +83,7 @@ abstract class PairManager {
     }
 
     // 把 Pair 对象存储到同步的集合中，这里模拟了耗时过程。
-    public void store(Pair pair) {
+    protected void store(Pair pair) {
         // 这个操作是线程安全的
         storage.add(pair);
         try {
@@ -91,14 +93,14 @@ abstract class PairManager {
         }
     }
     // 将增长方法抽象出来，由子类来实现
-    abstract void increment();
+    public abstract void increment();
 }
 
 // 对 increment() 方法进行同步的实现
 class PairManager1 extends PairManager {
 
     @Override
-    synchronized void increment() {
+    public synchronized void increment() { // synchronized 不属于方法签名的组成部分，所以可以在覆盖的时候加上去。
         pair.incrementX();
         pair.incrementY();
         store(getPair());
@@ -109,12 +111,12 @@ class PairManager1 extends PairManager {
 class PairManager2 extends PairManager {
 
     @Override
-    void increment() {
+    public void increment() {
         Pair temp;
         synchronized (this) {
             pair.incrementX();
             pair.incrementY();
-                temp = getPair();
+            temp = getPair();
         }
         store(temp);
         // 为什么不这样写呢？ 这样就不会同步了，有可能存的并不是上面刚刚加好的。
@@ -125,7 +127,6 @@ class PairManager2 extends PairManager {
 // 这个可以理解为生产者
 class PairManipulator implements Runnable {
     private PairManager pairManager;
-    private Pair pair;
 
     public PairManipulator(PairManager pairManager) {
         this.pairManager = pairManager;
@@ -135,18 +136,17 @@ class PairManipulator implements Runnable {
     public void run() {
         while (true) {
             pairManager.increment();
-            pair = pairManager.getPair();
         }
     }
 
     @Override
     public String toString() {
-        return "Pair: " + pair
+        return "Pair: " + pairManager.getPair()
                 + ", checkCounter = " + pairManager.checkCounter.get();
     }
 }
 
-// 这个可以理解为消费者
+// 这个可以理解为消费者，统计检查频率的
 class PairChecker implements Runnable {
     private PairManager pairManager;
 
@@ -157,9 +157,9 @@ class PairChecker implements Runnable {
     @Override
     public void run() {
         while (true) {
-            // 每次检查成功后，都会加 1。
+            // 每次进行检查，都会加 1。
             pairManager.checkCounter.incrementAndGet();
-            pairManager.getPair().checkState();
+            pairManager.getPair().checkState(); // 用来查看是否出现了安全性问题的方法。
         }
     }
 
@@ -167,15 +167,17 @@ class PairChecker implements Runnable {
 
 // 临界区类
 public class CriticalSection {
-
+    // PairManager 就是共享资源
     static void testApproaches(PairManager pm1, PairManager pm2) {
-        ExecutorService exec = Executors.newCachedThreadPool(new DaemonThreadFactory());
+        ExecutorService exec = Executors.newCachedThreadPool(new DaemonThreadFactory()); // 后台线程
         PairManipulator pairManipulator1 = new PairManipulator(pm1);
         PairManipulator pairManipulator2 = new PairManipulator(pm2);
         PairChecker pairChecker1 = new PairChecker(pm1);
         PairChecker pairChecker2 = new PairChecker(pm2);
-        exec.execute(pairManipulator1);
-        exec.execute(pairManipulator2);
+        // 开启两个生产者任务
+        exec.execute(pairManipulator1); // 同步方法的实现
+        exec.execute(pairManipulator2); // 同步代码块的实现
+        // 开启两个消费者任务
         exec.execute(pairChecker1);
         exec.execute(pairChecker2);
         try {
