@@ -59,7 +59,7 @@ class Entrance implements Runnable {
     public void run() {
         while (!canceled) {
             // 这段代码是每个 Entrance 自己统计数目的
-            synchronized (this) { // this 是谁？this 就是 Entrance 对象。
+            synchronized (this) { // this 是谁？this 就是 Entrance 对象。可是这个同步没有什么作用啊。
                 number++;
             }
             // 这句是 Count 对象来统计，这是总的
