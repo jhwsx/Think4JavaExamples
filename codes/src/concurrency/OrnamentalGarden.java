@@ -14,18 +14,19 @@ import java.util.concurrent.TimeUnit;
  * @author wangzhichao
  * @since 2020/3/30
  */
+// 用来跟踪花园参观者的主计数值
 class Count {
     private Random random = new Random(47);
     private int count;
-
+    // 同步方法，控制了对 count 域的访问
     public synchronized int increment() {
         int temp = count;
-        if (random.nextBoolean()) {
+        if (random.nextBoolean()) { // 有一半的次数会发生 yield
             Thread.yield();
         }
         return (count = ++temp);
     }
-
+    // 同步方法，控制了对 count 域的访问
     public synchronized int value() {
         return count;
     }
@@ -36,7 +37,7 @@ class Entrance implements Runnable {
     private static Count count = new Count();
     // 静态的 Entrance 容器
     private static List<Entrance> entrances = new ArrayList<>();
-    // 每个 Entrance 自己统计的数目
+    // 每个 Entrance 自己统计的数目，表示通过某个特定入口进入的参观者的数量
     private int number = 0;
     // Entrance 的 id 号码，用来区分 Entrance 的
     private final int id;
@@ -50,6 +51,7 @@ class Entrance implements Runnable {
 
     public Entrance(int id) {
         this.id = id;
+        // 把这个任务保存在列表里面。可以避免对死亡的任务进行垃圾回收。
         entrances.add(this);
     }
 
@@ -57,11 +59,11 @@ class Entrance implements Runnable {
     public void run() {
         while (!canceled) {
             // 这段代码是每个 Entrance 自己统计数目的
-            synchronized (this) {
+            synchronized (this) { // this 是谁？this 就是 Entrance 对象。
                 number++;
             }
             // 这句是 Count 对象来统计，这是总的
-            System.out.println(this + " Total: " + count.increment());
+            System.out.println(this + " Total: " + count.increment()); // increment() 方法是同步方法
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
             } catch (InterruptedException e) {
