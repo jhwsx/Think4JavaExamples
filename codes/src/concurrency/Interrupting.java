@@ -8,6 +8,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 中断方式：
+ * 1，使用 ExecutorService 的 submit 方法来启动任务，会返回一个 Future<?> 对象，通过调用这个 Future<?>的cancel() 方法可以中断单个的线程；
+ * 2，使用 ExecutorService 的 shutdownNow() 方法，会发送一个 interrupt() 调用给它启动的所有线程，也就是中断所有的线程。
+ * 参考：https://blog.csdn.net/horero/article/details/77622951
+ *
+ * 什么是可以中断的？什么又是不可以中断的？
+ * sleep() 上的等待是可以终端的，I/O 和在 synchronized 块上的等待是不可中断的
  * @author wangzhichao
  * @since 2020/3/31
  */
@@ -55,7 +62,7 @@ class IOBlocked implements Runnable {
 // 这是不可中断的阻塞示例
 class SynchronizedBlocked implements Runnable {
     public synchronized void f() {
-        while (true) { // 这里永远不会释放锁
+        while (true) { // 这里是个死循环，所以一旦拿到了锁，就永远不会释放锁
             Thread.yield();
         }
     }
@@ -72,7 +79,7 @@ class SynchronizedBlocked implements Runnable {
     @Override
     public void run() {
         System.out.println("Trying to call f()");
-        f(); // 这里一直拿不到锁，死锁了。
+        f(); // 这里一直拿不到锁，阻塞在这里，等待锁被释放后再拿到锁（实际上，锁被另外一个线程持有了，永远不会被释放）。
         System.out.println("Exiting SynchronizedBlocked.run()");
     }
 }
@@ -93,8 +100,9 @@ public class Interrupting {
         test(new SleepBlocked());
         test(new IOBlocked(System.in));
         test(new SynchronizedBlocked());
+//        exec.shutdownNow();
         TimeUnit.SECONDS.sleep(3);
-        System.out.println("Aboring with System.exit(0)");
+        System.out.println("Aborting with System.exit(0)");
         System.exit(0);
     }
 }

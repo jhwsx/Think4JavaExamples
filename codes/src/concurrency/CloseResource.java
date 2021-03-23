@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 通过关闭底层的资源来中断阻塞的任务
+ * I/O 任务不可以通过线程的 interrupt() 方法来中断，但是可以通过关闭底层的资源来中断阻塞的任务
  *
  * @author wangzhichao
  * @since 2020/3/31

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Interrupting a blocked NIO channel
+ * 被阻塞的 NIO 通道会自动地响应中断
  *
  * @author wangzhichao
  * @since 2020/3/31
