@@ -22,7 +22,7 @@ public class AtomicIntegerTest implements Runnable {
     }
 
     public void evenIncrement() {
-        i.getAndAdd(2);
+        i.getAndAdd(2); // 就是这一句代码
     }
 
     @Override

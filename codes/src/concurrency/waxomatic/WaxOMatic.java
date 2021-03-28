@@ -74,7 +74,7 @@ class WaxOff implements Runnable {
         try {
             while(!Thread.interrupted()) {
                 car.waitForWaxing(); // 如果 waxOn 是 false，就在这里等待，挂起线程
-                // 擦拭，除去蜡
+                // 抛光，除去蜡
                 System.out.print("Wax Off! ");
                 TimeUnit.MILLISECONDS.sleep(200);
                 car.buffed();
