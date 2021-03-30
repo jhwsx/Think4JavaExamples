@@ -21,20 +21,20 @@ public class CodeCopy {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
         for (String s : fileList) {
             if (
-                    s.contains("Home")
-                            || s.contains("Task")
-                            || s.contains("Splash")
-                            || s.contains("Main")
-                            || s.contains("Mine")
-                            || s.contains("Withdraw")
-                            || s.contains("Settings")
-                            || s.contains("Logoff")
+                    s.contains("Feedback")
+                            || s.contains("NewHandStrategyActivity")
+//                            || s.contains("Splash")
+//                            || s.contains("Main")
+//                            || s.contains("Mine")
+//                            || s.contains("Withdraw")
+//                            || s.contains("Settings")
+//                            || s.contains("Logoff")
             ) {
                 FileInputStream fis = new FileInputStream(s);
                 BufferedReader br = new BufferedReader(new InputStreamReader(fis));
                 String line;
                 while ((line = br.readLine()) != null) {
-                    if (line.contains("author") || line.contains("since") || line.contains("Chang.Xiao")) {
+                    if (line.contains("author") || line.contains("since") || line.contains("Chang.Xiao") || line.contains("*")) {
                         continue;
                     }
                     bw.write(line, 0, line.length());
