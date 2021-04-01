@@ -1,4 +1,4 @@
-package concurrency;
+package concurrency.ex26;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -84,6 +84,7 @@ class Chef implements Runnable {
     }
 }
 
+
 public class Restaurant {
     Meal meal;
     ExecutorService exec = Executors.newCachedThreadPool();
@@ -98,19 +99,3 @@ public class Restaurant {
         new Restaurant();
     }
 }
-
-/*
-打印结果：
- Order Up! WaitPerson got Meal 1
- Order Up! WaitPerson got Meal 2
- Order Up! WaitPerson got Meal 3
- Order Up! WaitPerson got Meal 4
- Order Up! WaitPerson got Meal 5
- Order Up! WaitPerson got Meal 6
- Order Up! WaitPerson got Meal 7
- Order Up! WaitPerson got Meal 8
- Order Up! WaitPerson got Meal 9
- Out of food, closing
- WaitPerson interrupted // WaitPerson 的中断是由于中断了 wait 导致的
- Order Up! Chef interrupted // Chef 的中断是由于中断了 sleep 导致的
- */

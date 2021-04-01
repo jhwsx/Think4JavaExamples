@@ -1,4 +1,4 @@
-package concurrency;
+package concurrency.ex25;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -69,6 +69,7 @@ class Chef implements Runnable {
                 if (++count == 10) {
                     System.out.println("Out of food, closing");
                     restaurant.exec.shutdownNow();
+                    return; // 在这里添加return后，打印结果少了 Order Up! Chef interrupted
                 }
                 System.out.print("Order Up! ");
                 synchronized (restaurant.waitPerson) { // 这个锁是 WaitPerson 对象。
@@ -112,5 +113,4 @@ public class Restaurant {
  Order Up! WaitPerson got Meal 9
  Out of food, closing
  WaitPerson interrupted // WaitPerson 的中断是由于中断了 wait 导致的
- Order Up! Chef interrupted // Chef 的中断是由于中断了 sleep 导致的
  */
