@@ -1,0 +1,207 @@
+package cc.buqianjin.client.ui.mine
+
+import android.os.Bundle
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.FeedbackActivityBinding
+import cc.buqianjin.client.util.BarUtils
+import cc.buqianjin.client.util.InjectUtil
+import com.android.base.util.SoftInputUtil
+import com.android.base.util.ToastUtils
+import com.android.base.util.Utils
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.jaeger.library.StatusBarUtil
+
+class FeedbackActivity : BaseActivity<NoViewModel, FeedbackActivityBinding>() {
+
+    private val model by viewModels<FeedbackViewModel> { InjectUtil.getFeedbackModelFactory() }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 改变状态栏颜色为白色透明的
+        StatusBarUtil.setColor(this, ContextCompat.getColor(Utils.getApp(), R.color.white), 0)
+        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbarFeedback)
+        StatusBarUtil.setLightMode(this)
+        binding.btnSubmit.setOnClickListener {
+            submit(it)
+        }
+        binding.etContact.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                submit(v)
+                false
+            } else {
+                true
+            }
+        }
+        binding.toolbarFeedback.setNavigationOnClickListener { finish() }
+        binding.ivQrCode.setOnLongClickListener {
+            SaveWeChatQrCodeDialog(this@FeedbackActivity) {
+                model.saveWeChatQrCode()
+            }.show()
+            true
+        }
+        subscribeToast()
+    }
+
+    private fun submit(v: View) {
+        model.submit(binding.etContent.text.toString(), binding.etContact.text.toString())
+        SoftInputUtil.hideSoftInput(v)
+    }
+
+    override fun getLayoutId() = R.layout.feedback_activity
+
+
+    private fun subscribeToast() {
+        model.toast.observe(this) { msg ->
+            msg?.let {
+                ToastUtils.showToast(Utils.getApp(), it)
+            }
+        }
+    }
+
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.reward.source.UserRepository
+
+class FeedbackModelFactory(private val userRepository: UserRepository): ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return FeedbackViewModel(userRepository) as T
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaScannerConnection
+import android.os.Environment
+import android.text.TextUtils
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import cc.buqianjin.client.R
+import cc.buqianjin.client.model.UserFeedBack
+import com.android.base.extension.io2main
+import com.android.reward.source.UserRepository
+import com.android.base.parseserver.ParseClassUtils
+import com.android.base.util.LogUtils
+import com.android.base.util.Utils
+import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+
+class FeedbackViewModel(private val userRepository: UserRepository) : ViewModel() {
+    private val compositeDisposable = CompositeDisposable()
+    private val _toast = MutableLiveData<Int>()
+    val toast: LiveData<Int> = _toast
+
+    fun submit(content: String?, contact: String?) {
+        if (TextUtils.isEmpty(content) || TextUtils.isEmpty(content!!.trim())) {
+            _toast.value = R.string.feedback_content_empty
+            return
+        }
+        val userFeedBack = UserFeedBack()
+        userFeedBack.contact = contact?.trim() ?: ""
+        userFeedBack.content = content
+        userFeedBack.userId = userRepository.cachedSilverUser?.userid ?: ""
+//        userFeedBack.setUtdid(AccountManager.get().getUtdid())
+        ParseClassUtils.save(userFeedBack) { e ->
+            _toast.value = if (e == null) R.string.feedback_submit_success else R.string.feedback_submit_fail
+        }
+    }
+
+    fun saveWeChatQrCode() {
+        compositeDisposable.add(
+                Single.create<Boolean> {
+                    val result = saveWeChatQrCodeToPicture()
+                    if (it.isDisposed) return@create
+                    it.onSuccess(result)
+                }
+                        .io2main()
+                        .subscribe({
+                            LogUtils.d(TAG, "saveWeChatQrCode success: $it")
+                            if (it) {
+                                _toast.value = R.string.feedback_qr_code_save_success
+                            } else {
+                                _toast.value = R.string.feedback_qr_code_save_fail
+                            }
+                        }, {
+                            LogUtils.e(TAG, "saveWeChatQrCode error: $it")
+                            _toast.value = R.string.feedback_qr_code_save_fail
+                        }))
+    }
+
+    private fun saveWeChatQrCodeToPicture(): Boolean {
+        val appDir = Utils.getApp().getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: return false
+        if (!appDir.exists()) {
+            appDir.mkdirs()
+        }
+        val fileName: String = Utils.getApp().getString(R.string.feedback_qr_code_name).toString() + ".jpg"
+        val file = File(appDir, fileName)
+        try {
+            val bitmap = BitmapFactory.decodeResource(Utils.getApp().resources, R.drawable.feedback_qr_code)
+            val fos = FileOutputStream(file)
+            val isSuccess = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+            //将该文件扫描到相册
+            MediaScannerConnection.scanFile(Utils.getApp(), arrayOf(file.path), null, null)
+            return isSuccess
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return false
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!compositeDisposable.isDisposed) {
+            compositeDisposable.dispose()
+        }
+    }
+
+    companion object {
+        private const val TAG = "FeedbackViewModel"
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.os.Bundle
+import androidx.core.content.ContextCompat
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.NewHandStrategyActivityBinding
+import cc.buqianjin.client.util.BarUtils
+import com.android.base.util.Utils
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.jaeger.library.StatusBarUtil
+
+class NewHandStrategyActivity : BaseActivity<NoViewModel, NewHandStrategyActivityBinding>() {
+    override fun getLayoutId() = R.layout.new_hand_strategy_activity
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 改变状态栏颜色为白色透明的
+        StatusBarUtil.setColor(this, ContextCompat.getColor(Utils.getApp(), R.color.white), 0)
+        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbarNewHand)
+        StatusBarUtil.setLightMode(this)
+        binding.toolbarNewHand.setNavigationOnClickListener { finish() }
+
+        binding.newHandStrategyItem2.apply {
+            tvTitle.setText(R.string.new_hand_strategy_item_title_2)
+            tvContent.setText(R.string.new_hand_strategy_item_content_2)
+        }
+        binding.newHandStrategyItem3.apply {
+            tvTitle.setText(R.string.new_hand_strategy_item_title_3)
+            tvContent.setText(R.string.new_hand_strategy_item_content_3)
+        }
+    }
+}

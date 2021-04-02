@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  * consumer is faster than the producer, then it must not read the same
  * data more than once. Do not assume anything about the relative speeds
  * of the producer or consumer.
+ * 单生产者，单消费者，带缓存队列的例子
  **/
 class Apk {
     private static int counter = 0;

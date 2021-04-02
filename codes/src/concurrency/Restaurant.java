@@ -35,8 +35,8 @@ class WaitPerson implements Runnable {
                     while (restaurant.meal == null) {
                         wait();
                     }
-                    System.out.println("WaitPerson got " + restaurant.meal);
                 }
+                System.out.println("WaitPerson got " + restaurant.meal);
                 synchronized (restaurant.chef) { // 这个锁是 Chef 对象。
                     restaurant.meal = null;
                     restaurant.chef.notifyAll();
