@@ -44,11 +44,18 @@ class LiftOffRunner implements Runnable {
     }
 }
 
-class PutLiftOffRunner implements Runnable {
+class LiftOffAdder implements Runnable {
+    private LiftOffRunner runner;
+
+    LiftOffAdder(LiftOffRunner runner) {
+        this.runner = runner;
+    }
 
     @Override
     public void run() {
-
+        for (int i = 0; i < 5; i++) {
+            runner.add(new LiftOff(5));
+        }
     }
 }
 public class TestBlockingQueues {
@@ -72,9 +79,9 @@ public class TestBlockingQueues {
         LiftOffRunner runner = new LiftOffRunner(queue);
         Thread t = new Thread(runner);
         t.start();
-        for (int i = 0; i < 5; i++) {
-            runner.add(new LiftOff(5));
-        }
+        LiftOffAdder liftOffAdder = new LiftOffAdder(runner);
+        Thread t2 = new Thread(liftOffAdder);
+        t2.start();
         getkey("Press 'Enter' (" + msg + ")");
         t.interrupt();
         System.out.println("Finished " + msg + " test");
