@@ -1,8 +1,5 @@
 package concurrency.ex30;
 
-import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,9 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 任务间使用管道进行输入与输出
- *
- * PipedReader 是可中断的；而普通的 I/O 是不可中断的。
+ * 修改 PipedIO.java，使其使用 BlockingQueue 而不是管道
  *
  * @author wangzhichao
  * @since 2021/4/8
