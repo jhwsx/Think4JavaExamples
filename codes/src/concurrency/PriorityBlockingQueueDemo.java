@@ -34,6 +34,7 @@ class PrioritizedTask implements Runnable, Comparable<PrioritizedTask> {
 
     @Override
     public void run() {
+        // 模拟任务执行的时间值。
         try {
             TimeUnit.MILLISECONDS.sleep(rand.nextInt(250));
         } catch (InterruptedException e) {
@@ -61,6 +62,7 @@ class PrioritizedTask implements Runnable, Comparable<PrioritizedTask> {
 
         @Override
         public void run() {
+            // 打印任务创建序列的列表
             int count = 0;
             for (PrioritizedTask pt : sequence) {
                 System.out.print(pt.summary());
@@ -76,7 +78,7 @@ class PrioritizedTask implements Runnable, Comparable<PrioritizedTask> {
     }
 }
 
-// 生成者任务
+// 生产者任务
 class PrioritizedTaskProducer implements Runnable {
     private final Random rand = new Random(47);
     private Queue<Runnable> queue;
@@ -116,7 +118,7 @@ class PrioritizedTaskProducer implements Runnable {
 
 // 消费者任务
 class PrioritizedTaskConsumer implements Runnable {
-    private PriorityBlockingQueue<Runnable> q;
+    private final PriorityBlockingQueue<Runnable> q;
 
     public PrioritizedTaskConsumer(PriorityBlockingQueue<Runnable> q) {
         this.q = q;
