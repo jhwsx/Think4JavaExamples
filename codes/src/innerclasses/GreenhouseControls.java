@@ -8,10 +8,11 @@ import innerclasses.controller.Event;
  *     author : wangzhichao
  *     e-mail : wangzhichao@adups.com
  *     time   : 2019/07/28
- *     desc   :
+ *     desc   : 控制框架的完整实现。
  *     version: 1.0
  * </pre>
  */
+// 内部类能够自由地访问外部类的字段。
 public class GreenhouseControls extends Controller {
     private boolean light = false;
 

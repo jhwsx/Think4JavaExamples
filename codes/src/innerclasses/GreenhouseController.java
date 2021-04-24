@@ -13,7 +13,7 @@ import innerclasses.controller.Event;
  */
 public class GreenhouseController {
     public static void main(String[] args) {
-       Test.main(new String[]{"40000"});
+       Test.main(new String[]{"4000"});
     }
 }
 
