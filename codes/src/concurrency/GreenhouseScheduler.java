@@ -24,10 +24,12 @@ public class GreenhouseScheduler {
     ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(10);
 
     public void schedule(Runnable event, long delay) {
+        // 运行一次性任务
         scheduler.schedule(event, delay, TimeUnit.MILLISECONDS);
     }
 
     public void repeat(Runnable event, long initialDelay, long period) {
+        // 每隔规定的时间重复执行任务
         scheduler.scheduleAtFixedRate(event, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
@@ -104,12 +106,15 @@ public class GreenhouseScheduler {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-
+                    for (DataPoint dataPoint : data) {
+                        System.out.println(dataPoint);
+                    }
                 }
             }).start();
         }
     }
 
+    // 新特性：数据收集
     static class DataPoint {
         final Calendar time;
         final float temperature;
