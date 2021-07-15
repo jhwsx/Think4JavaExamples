@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DirList2 {
-    // 匿名内部类的写法
+    // 返回FilenameFilter 的匿名内部类的写法
     public static FilenameFilter filter(final String regex) {
         return new FilenameFilter() {
             @Override
@@ -29,7 +29,7 @@ public class DirList2 {
         } else {
             list = path.list(filter(args[0]));
         }
-        // 忽略大小排序
+        // 忽略大小写排序
         Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
         // 打印
         for (String dirItem : list) {
