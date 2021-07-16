@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 public class DirList {
     // 参数：D.*\.java
+    // T.*\.txt 以 T 开头并且以 .txt 结尾的文件
     public static void main(String[] args) {
         // 文件目录
         File path = new File(".");
@@ -18,7 +19,7 @@ public class DirList {
         } else {
             list = path.list(new DirFilter(args[0]));
         }
-        // 忽略大小排序
+        // 忽略大小写排序
         Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
         // 打印
         for (String dirItem : list) {

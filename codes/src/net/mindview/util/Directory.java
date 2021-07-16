@@ -8,6 +8,10 @@ import java.util.regex.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * local 方法产生由本地目录中的文件构成的File对象数组；
+ * walk 方法产生给定目录下的由整个目录树中所有文件构成的List<File>.
+ */
 public final class Directory {
     public static File[]
     local(File dir, final String regex) {

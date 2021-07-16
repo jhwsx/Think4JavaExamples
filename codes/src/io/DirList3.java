@@ -24,7 +24,7 @@ public class DirList3 {
                 }
             });
         }
-        // 忽略大小排序
+        // 忽略大小写排序
         Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
         // 打印
         for (String dirItem : list) {

@@ -1,8 +1,16 @@
 //: net/net.net.mindview/util/ProcessFiles.java
-package net.mindview.util;
+package io.ex05;
+
+import net.mindview.util.Directory;
 
 import java.io.*;
 
+/**
+ * 修改ProcessFiles.java, 使其匹配正则表达式而不是固定的扩展名。
+ *
+ * @author wangzhichao
+ * @since 2021/7/16
+ */
 public class ProcessFiles {
     public interface Strategy {
         void process(File file);
@@ -13,13 +21,13 @@ public class ProcessFiles {
      */
     private final Strategy strategy;
     /**
-     * 扩展名
+     * 正则表达式
      */
-    private final String ext;
+    private final String regex;
 
-    public ProcessFiles(Strategy strategy, String ext) {
+    public ProcessFiles(Strategy strategy, String regex) {
         this.strategy = strategy;
-        this.ext = ext;
+        this.regex = regex;
     }
 
     public void start(String[] args) {
@@ -35,11 +43,10 @@ public class ProcessFiles {
                         processDirectoryTree(fileArg);
                     else {
                         // 是文件，直接使用策略对象来处理
-                        // Allow user to leave off extension:
-                        if (!arg.endsWith("." + ext))
-                            arg += "." + ext;
-                        strategy.process(
-                                new File(arg).getCanonicalFile());
+                        if (arg.matches(regex)) {
+                            strategy.process(
+                                    new File(arg).getCanonicalFile());
+                        }
                     }
                 }
         } catch (IOException e) {
@@ -50,7 +57,7 @@ public class ProcessFiles {
     public void
     processDirectoryTree(File root) throws IOException {
         for (File file : Directory.walk(
-                root.getAbsolutePath(), ".*\\." + ext))
+                root.getAbsolutePath(), regex))
             strategy.process(file.getCanonicalFile());
     }
 
@@ -60,6 +67,6 @@ public class ProcessFiles {
             public void process(File file) {
                 System.out.println(file);
             }
-        }, "java").start(args);
+        }, "C.*").start(args);
     }
 } /* (Execute to see output) *///:~
