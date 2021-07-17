@@ -1,66 +1,608 @@
+package cc.buqianjin.client.model
+
+import com.android.reward.data.WithdrawRecord
+
+class WithdrawRecordEx : WithdrawRecord() {
+    var type: Int = TYPE_RECORD
+
+    companion object {
+        const val TYPE_RECORD = 0
+        const val TYPE_LIST_LIMIT = 1
+
+        fun copyFrom(uwr: WithdrawRecord): WithdrawRecordEx {
+            return WithdrawRecordEx().apply {
+                cash = uwr.cash
+                exchangeCoin = uwr.exchangeCoin
+                fromCoin = uwr.fromCoin
+                pkgName = uwr.pkgName
+                time = uwr.time
+                status = uwr.status
+                toCoin = uwr.toCoin
+                uid = uwr.uid
+            }
+        }
+    }
+}
+package cc.buqianjin.client.ui.main
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.graphics.BitmapFactory
+import android.os.Bundle
+import android.util.SparseArray
+import android.view.Menu
+import android.widget.ImageView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager.widget.ViewPager
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.MainActivityBinding
+import cc.buqianjin.client.extension.setCurrentItemQuick
+import cc.buqianjin.client.extension.setMenuIcon
+import cc.buqianjin.client.ui.home.HomeFragment
+import cc.buqianjin.client.ui.mine.MineFragment
+import cc.buqianjin.client.ui.redbag.RedBagFragment
+import cc.buqianjin.client.ui.task.TaskFragment
+import cc.buqianjin.client.ui.video.VideoFragment
+import com.android.base.util.FragmentUtils.instantiateFragment
+import com.android.base.util.LogUtils
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.jaeger.library.StatusBarUtil
+import com.litre.openad.data.DataManager
+
+
+class MainActivity : BaseActivity<NoViewModel, MainActivityBinding>() {
+    private val fragments = SparseArray<Fragment>()
+
+    @SuppressLint("CheckResult")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        StatusBarUtil.setTranslucentForImageViewInFragment(this@MainActivity, null)
+        super.onCreate(savedInstanceState)
+        setupFragments()
+        setupBottomNavigationBar()
+        setupViewPager()
+    }
+
+    private fun setupViewPager() {
+        binding.viewPager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                binding.bottomNavigationView.menu.getItem(position).isChecked = true
+                when (position) {
+                    indexHome, indexVideo, indexTask -> setupStatusBarMode(false)
+                    indexMine -> setupStatusBarMode(true)
+                }
+
+            }
+        })
+        binding.viewPager.offscreenPageLimit = 4
+        binding.viewPager.adapter = object : FragmentPagerAdapter(supportFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+            override fun getCount() = fragments.size()
+
+            override fun getItem(position: Int) = fragments[position]
+        }
+    }
+
+    private fun setupStatusBarMode(isLightMode: Boolean) {
+        if (isLightMode)
+            StatusBarUtil.setLightMode(this@MainActivity)
+        else
+            StatusBarUtil.setDarkMode(this@MainActivity)
+    }
+
+    private fun setupFragments() {
+        fragments.clear()
+        var index = 0
+        val fm = supportFragmentManager
+        indexHome = index
+        fragments.put(indexHome, instantiateFragment(fm, binding.viewPager, indexHome, HomeFragment.newInstance()))
+        //上线审核先关闭红包
+        if (!DataManager.getInstance().isAdClosed) {
+            indexRedBag = ++index
+            fragments.put(indexRedBag, instantiateFragment(fm, binding.viewPager, indexRedBag, RedBagFragment.newInstance()))
+        }
+        indexTask = ++index
+        fragments.put(indexTask, instantiateFragment(fm, binding.viewPager, indexTask, TaskFragment.newInstance()))
+        //上线审核先关闭视频
+        if (!DataManager.getInstance().isAdClosed) {
+            indexVideo = ++index
+            fragments.put(indexVideo, instantiateFragment(fm, binding.viewPager, indexVideo, VideoFragment.newInstance()))
+        }
+        indexMine = ++index
+        fragments.put(indexMine, instantiateFragment(fm, binding.viewPager, indexMine, MineFragment.newInstance()))
+    }
+
+    private fun setupBottomNavigationBar() {
+        val bnv = binding.bottomNavigationView
+        bnv.itemIconTintList = null
+        if (indexHome != INVALID_INDEX) {
+            bnv.menu.add(Menu.NONE, R.id.main_bottom_navi_home, Menu.NONE, R.string.main_bottom_navi_home)
+            bnv.setMenuIcon(R.id.main_bottom_navi_home, R.drawable.main_bottom_navi_home_selector)
+        }
+        if (indexRedBag != INVALID_INDEX) {
+            bnv.menu.add(Menu.NONE, R.id.main_bottom_navi_red_bag, Menu.NONE, R.string.main_bottom_navi_red_bag)
+            bnv.setMenuIcon(R.id.main_bottom_navi_red_bag, R.drawable.main_bottom_navi_red_bag_selector)
+        }
+        if (indexTask != INVALID_INDEX) {
+            bnv.menu.add(Menu.NONE, R.id.main_bottom_navi_task, Menu.NONE, R.string.main_bottom_navi_task)
+            bnv.setMenuIcon(R.id.main_bottom_navi_task, R.drawable.main_bottom_navi_task_selector)
+        }
+        if (indexVideo != INVALID_INDEX) {
+            bnv.menu.add(Menu.NONE, R.id.main_bottom_navi_video, Menu.NONE, R.string.main_bottom_navi_video)
+            bnv.setMenuIcon(R.id.main_bottom_navi_video, R.drawable.main_bottom_navi_video_selector)
+        }
+        if (indexMine != INVALID_INDEX) {
+            bnv.menu.add(Menu.NONE, R.id.main_bottom_navi_mine, Menu.NONE, R.string.main_bottom_navi_mine)
+            bnv.setMenuIcon(R.id.main_bottom_navi_mine, R.drawable.main_bottom_navi_mine_selector)
+        }
+        if (indexTask != INVALID_INDEX) {
+            adjustNavigationIconSize(bnv, indexTask)
+        }
+        binding.bottomNavigationView.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.main_bottom_navi_home -> {
+                    binding.viewPager.setCurrentItemQuick(indexHome)
+                    setupStatusBarMode(isLightMode = false)
+                    true
+                }
+                R.id.main_bottom_navi_red_bag -> {
+                    binding.viewPager.setCurrentItemQuick(indexRedBag)
+                    setupStatusBarMode(isLightMode = true)
+                    true
+                }
+                R.id.main_bottom_navi_task -> {
+                    binding.viewPager.setCurrentItemQuick(indexTask)
+                    setupStatusBarMode(isLightMode = false)
+                    true
+                }
+                R.id.main_bottom_navi_video -> {
+                    binding.viewPager.setCurrentItemQuick(indexVideo)
+                    setupStatusBarMode(isLightMode = false)
+                    true
+                }
+                R.id.main_bottom_navi_mine -> {
+                    binding.viewPager.setCurrentItemQuick(indexMine)
+                    setupStatusBarMode(isLightMode = true)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun adjustNavigationIconSize(navigation: BottomNavigationView, index: Int) {
+        val menuView = navigation.getChildAt(0) as BottomNavigationMenuView
+        for (i in 0 until menuView.childCount) {
+            val iconView = menuView.getChildAt(i).findViewById<ImageView>(com.google.android.material.R.id.icon)
+            iconView.scaleType = ImageView.ScaleType.CENTER
+            val layoutParams = iconView.layoutParams
+            if (i != index) continue
+            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.main_bottom_navi_task_selected)
+            layoutParams.height = bitmap.height
+            layoutParams.width = bitmap.width
+            iconView.layoutParams = layoutParams
+        }
+    }
+
+    override fun getLayoutId() = R.layout.main_activity
+
+    override fun onBackPressed() {
+        // 1，当前底部导航条目是否是索引为 0 的那一个？
+        if (binding.viewPager.currentItem != 0) {
+            selectHomeBottomTab()
+            return
+        }
+        // 2，弹出退出对话框
+        ExitAppDialog.newInstance().apply {
+            show(this@MainActivity)
+        }
+    }
+
+    fun selectHomeBottomTab() {
+        binding?.viewPager?.setCurrentItemQuick(0)
+    }
+
+    fun selectVideoBottomTab() {
+        binding?.viewPager?.setCurrentItemQuick(indexVideo)
+    }
+
+    fun selectRedBagBottomTab() {
+        if (indexRedBag == INVALID_INDEX) {
+            LogUtils.d(TAG, "redBagBottomTab is gone.")
+            return
+        }
+        LogUtils.d(TAG, "selectRedBagBottomTab")
+        binding?.viewPager?.setCurrentItemQuick(indexRedBag)
+    }
+
+    fun updateScratchCardOrWheelTask(url: String, complete: Boolean) {
+        findTaskFragment()?.updateScratchCardOrWheelTask(url, complete)
+    }
+
+    fun autoSignIn() {
+        findTaskFragment()?.autoSignIn()
+    }
+
+    fun invokeVideoRewardFlow() {
+        findTaskFragment()?.invokeVideoRewardFlow()
+    }
+
+    private fun findTaskFragment(): TaskFragment? {
+        val size = fragments.size()
+        for (index in 0 until size) {
+            val fragment = fragments[index]
+            if (fragment is TaskFragment) {
+                return fragment
+            }
+        }
+        return null
+    }
+
+    companion object {
+        private const val INVALID_INDEX = -1
+        private var indexHome = INVALID_INDEX
+        private var indexRedBag = INVALID_INDEX
+        private var indexTask = INVALID_INDEX
+        private var indexVideo = INVALID_INDEX
+        private var indexMine = INVALID_INDEX
+
+        @JvmStatic
+        fun start(context: Context) {
+            val starter = Intent(context, MainActivity::class.java)
+            context.startActivity(starter)
+        }
+    }
+}
 package cc.buqianjin.client.ui.mine
 
 import android.os.Bundle
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import androidx.activity.viewModels
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
+import cc.buqianjin.client.BuildConfig
+import cc.buqianjin.client.GlideApp
 import cc.buqianjin.client.R
-import cc.buqianjin.client.databinding.FeedbackActivityBinding
+import cc.buqianjin.client.databinding.MineFragmentBinding
+import cc.buqianjin.client.extension.startActivity
+import cc.buqianjin.client.ui.common.DebugActivity
+import cc.buqianjin.client.ui.common.NetworkConnectManager
+import cc.buqianjin.client.ui.lock.LockScreenConfigActivity
+import cc.buqianjin.client.ui.main.MainActivity
+import cc.buqianjin.client.util.AppConst
+import cc.buqianjin.client.util.AppConst.Companion.URL_HUNT_FOR_JOB
+import cc.buqianjin.client.util.AppConst.Placement.Companion.NATIVE_MINE
 import cc.buqianjin.client.util.BarUtils
 import cc.buqianjin.client.util.InjectUtil
-import com.android.base.util.SoftInputUtil
-import com.android.base.util.ToastUtils
-import com.android.base.util.Utils
-import com.android.base.vm.BaseActivity
+import com.android.base.parseserver.ParseRemoteConfig
+import com.android.base.view.GridSpaceDecoration
+import com.android.base.vm.BaseFragment
 import com.android.base.vm.NoViewModel
-import com.jaeger.library.StatusBarUtil
+import com.android.reward.data.SilverUser
+import com.android.reward.helper.NativeAdHelper
+import com.android.reward.helper.NativeAdLifecycleHelper
+import com.bumptech.glide.request.RequestOptions
+import com.litre.openad.data.DataManager
 
-class FeedbackActivity : BaseActivity<NoViewModel, FeedbackActivityBinding>() {
+class MineFragment : BaseFragment<NoViewModel, MineFragmentBinding>(), View.OnClickListener {
 
-    private val model by viewModels<FeedbackViewModel> { InjectUtil.getFeedbackModelFactory() }
+    private val model by viewModels<MineViewModel> { InjectUtil.getMineModelFactory() }
+    private val nativeAdHelper = NativeAdLifecycleHelper(this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 改变状态栏颜色为白色透明的
-        StatusBarUtil.setColor(this, ContextCompat.getColor(Utils.getApp(), R.color.white), 0)
-        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbarFeedback)
-        StatusBarUtil.setLightMode(this)
-        binding.btnSubmit.setOnClickListener {
-            submit(it)
-        }
-        binding.etContact.setOnEditorActionListener { v, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                submit(v)
-                false
-            } else {
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        NetworkConnectManager.registerObserver(networkConnectCallback)
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.menu_mine, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_mine_settings -> {
+                Utils.getApp().startActivity<SettingsActivity>()
                 true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        binding.toolbarFeedback.setNavigationOnClickListener { finish() }
-        binding.ivQrCode.setOnLongClickListener {
-            SaveWeChatQrCodeDialog(this@FeedbackActivity) {
-                model.saveWeChatQrCode()
-            }.show()
-            true
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbarMine)
+        activity?.let {
+            (it as AppCompatActivity).setSupportActionBar(binding.toolbarMine)
+            binding.toolbarMine.title = ""
         }
+        setupCoinMoneyItems()
+        setupListeners()
+        setupGridItems()
+        setupListItems()
+        subscribeUser()
         subscribeToast()
+        subscribeMoney()
+        subscribeCoin()
+        subscribeNavigationToWithdraw()
+        loadNativeAd()
     }
 
-    private fun submit(v: View) {
-        model.submit(binding.etContent.text.toString(), binding.etContact.text.toString())
-        SoftInputUtil.hideSoftInput(v)
+    private fun setupGridItems() {
+        activity?.let {
+            val adapter = MineGridAdapter { pair ->
+                when (pair.first) {
+                    R.drawable.mine_wallpaper -> Utils.getApp().startActivity<WallpaperRecommendActivity>()
+                    R.drawable.mine_step_counter_lock_screen -> Utils.getApp().startActivity<LockScreenConfigActivity>()
+                    R.drawable.mine_wonderful_video -> (activity as? MainActivity)?.selectVideoBottomTab()
+                    R.drawable.mine_hunt_for_job -> WebViewActivity.start(Utils.getApp(), Utils.getApp().getString(R.string.mine_hunt_for_job), URL_HUNT_FOR_JOB)
+                }
+            }
+            binding.rvGrid.itemAnimator = null
+            binding.rvGrid.layoutManager = GridLayoutManager(it, 4)
+            binding.rvGrid.addItemDecoration(GridSpaceDecoration(
+                    0, 0, 0, 0
+            ))
+            binding.rvGrid.adapter = adapter
+            val list = mutableListOf<Pair<Int, Int>>()
+            list.add(Pair(R.drawable.mine_wallpaper, R.string.mine_desktop_wallpaper))
+            list.add(Pair(R.drawable.mine_step_counter_lock_screen, R.string.mine_step_counter_lock_screen))
+            if (!DataManager.getInstance().isAdClosed) {
+                list.add(Pair(R.drawable.mine_wonderful_video, R.string.mine_wonderful_video))
+            }
+            list.add(Pair(R.drawable.mine_hunt_for_job, R.string.mine_hunt_for_job))
+            adapter.submitList(list)
+        }
     }
 
-    override fun getLayoutId() = R.layout.feedback_activity
+    private fun setupListeners() {
+        binding.cvGoInvite.setOnClickListener(this)
+        binding.tvBindWechat.setOnClickListener(this)
+        binding.tvGuestLogin.setOnClickListener(this)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        loadData()
+        if (DebugActivity.counter >= 10) {
+            binding.mineItemDebug.root.visibility = View.VISIBLE
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        NetworkConnectManager.unregisterObserver(networkConnectCallback)
+    }
+
+    private val networkConnectCallback = { loadData() }
+
+    private fun loadData() {
+        model.getUserInfo()
+    }
+
+    private fun subscribeCoin() {
+        model.coin.observe(viewLifecycleOwner) {
+            it?.let { coin ->
+                binding.mineCoinItem.tvTitle.text = coin.toString()
+            }
+        }
+    }
+
+    private fun subscribeMoney() {
+        model.money.observe(viewLifecycleOwner) {
+            it?.let { money ->
+                binding.mineMoneyItem.tvTitle.text = money
+            }
+        }
+    }
 
     private fun subscribeToast() {
-        model.toast.observe(this) { msg ->
+        model.toast.observe(viewLifecycleOwner) { msg ->
             msg?.let {
                 ToastUtils.showToast(Utils.getApp(), it)
             }
         }
     }
+
+    private fun subscribeUser() {
+        model.user.observe(viewLifecycleOwner) { user: SilverUser? ->
+            if (user == null) {
+                GlideApp.with(this)
+                        .load(R.drawable.mine_guest)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(binding.ivMineAvatar)
+                binding.tvMineUserName.visibility = View.INVISIBLE
+                binding.tvBindWechat.visibility = View.INVISIBLE
+                binding.clUserId.visibility = View.INVISIBLE
+                binding.tvGuestLogin.visibility = View.VISIBLE
+            } else {
+                GlideApp.with(this)
+                        .load(user.headIcon)
+                        .placeholder(R.drawable.mine_guest)
+                        .error(R.drawable.mine_guest)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(binding.ivMineAvatar)
+                binding.tvMineUserName.visibility = View.VISIBLE
+                binding.tvBindWechat.visibility = View.VISIBLE
+                binding.clUserId.visibility = if (user.isWxBind) View.VISIBLE else View.INVISIBLE
+                binding.tvGuestLogin.visibility = View.INVISIBLE
+                binding.tvMineUserName.text =
+                        if (user.isWxBind) user.nickName
+                        else Utils.getApp().getString(R.string.mine_guest_name, user.userid)
+                binding.tvBindWechat.visibility = if (user.isWxBind) View.INVISIBLE else View.VISIBLE
+                binding.tvUserId.text = Utils.getApp().resources.getString(R.string.mine_id, user.userid)
+                binding.tvCopy.setOnClickListener {
+                    ClipboardUtils.copyText(binding.tvUserId.text.toString())
+                    ToastUtils.showToast(Utils.getApp(), R.string.mine_copy_success)
+                }
+            }
+        }
+    }
+
+    private fun setupListItems() {
+        binding.mineItemNewHandStrategy.apply {
+            ivIcon.setImageResource(R.drawable.mine_item_new_hand_strategy)
+            tvTitle.setText(R.string.mine_item_new_hand_strategy)
+            cvItem.setOnClickListener(this@MineFragment)
+        }
+        binding.mineItemFeedback.apply {
+            ivIcon.setImageResource(R.drawable.mine_item_feedback)
+            tvTitle.setText(R.string.mine_item_feedback)
+            cvItem.setOnClickListener(this@MineFragment)
+        }
+        binding.mineItemDebug.root.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
+        binding.mineItemDebug.apply {
+            ivIcon.setImageResource(R.drawable.mine_item_debug)
+            tvTitle.setText(R.string.mine_item_debug)
+            cvItem.setOnClickListener(this@MineFragment)
+        }
+    }
+
+    private fun subscribeNavigationToWithdraw() {
+        model.navigationToWithdraw.observe(viewLifecycleOwner) {
+            if (it == true) {
+                Utils.getApp().startActivity<WithdrawActivity>()
+                model.onWithdrawNavigated()
+            }
+        }
+    }
+
+    private fun setupCoinMoneyItems() {
+        binding.mineCoinItem.apply {
+            tvTitle.setText(R.string.mine_coin_money_placeholder)
+            tvDesc.setText(R.string.mine_current_coin)
+            ivIcon.setImageResource(R.drawable.mine_current_coin)
+            tvWithdraw.visibility = View.INVISIBLE
+            cvItem.setOnClickListener(this@MineFragment)
+        }
+
+        binding.mineMoneyItem.apply {
+            tvTitle.setText(R.string.mine_coin_money_placeholder)
+            tvDesc.setText(R.string.mine_money)
+            ivIcon.setImageResource(R.drawable.mine_money)
+            tvWithdraw.visibility = View.VISIBLE
+            cvItem.setOnClickListener(this@MineFragment)
+        }
+    }
+
+    override fun getLayoutId() = R.layout.mine_fragment
+
+    override fun onClick(v: View) {
+        when (v) {
+            binding.mineCoinItem.cvItem -> {
+                Utils.getApp().startActivity<AssetsDetailsActivity>()
+            }
+            binding.mineMoneyItem.cvItem -> {
+                model.handleWithdrawClick()
+            }
+            binding.cvGoInvite -> {
+                ShareUtils.share(Utils.getApp(), Utils.getApp().getString(R.string.app_name), Utils.getApp().getString(R.string.mine_share_content))
+            }
+            binding.mineItemNewHandStrategy.cvItem -> {
+                Utils.getApp().startActivity<NewHandStrategyActivity>()
+            }
+            binding.mineItemFeedback.cvItem -> {
+                Utils.getApp().startActivity<FeedbackActivity>()
+            }
+            binding.mineItemDebug.cvItem -> {
+                DebugActivity.startActivity(Utils.getApp())
+            }
+            binding.tvBindWechat -> {
+                model.bindWx()
+            }
+            binding.tvGuestLogin -> {
+                model.getUserInfo()
+            }
+        }
+    }
+
+    private fun loadNativeAd() {
+        activity?.let {
+            nativeAdHelper.loadNativeAd(it, ScreenUtils.getWidthDp() - 14, NATIVE_MINE, { view ->
+                binding.cvAdContainer.visibility = View.VISIBLE
+                binding.cvAdContainer.removeAllViews()
+                binding.cvAdContainer.addView(view)
+                if (ParseRemoteConfig.getInstance().getBool(AppConst.ConfigKey.BANNER_FAKE_CLOSE)) {
+                    // Add fake close button
+                    NativeAdHelper.addFakeCloseButton(binding.cvAdContainer)
+                }
+            }, {
+                binding.cvAdContainer.visibility = View.GONE
+                binding.cvAdContainer.removeAllViews()
+            }, {
+                NativeAdHelper.removeFakeCloseButton(binding.cvAdContainer)
+            })
+        }
+
+    }
+
+    companion object {
+        fun newInstance(): MineFragment {
+            val args = Bundle()
+
+            val fragment = MineFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import cc.buqianjin.client.databinding.MineGridRecycleItemBinding
+
+
+class MineGridAdapter constructor(private val itemCallback: (Pair<Int, Int>) -> Unit) : ListAdapter<Pair<Int, Int>, MineGridAdapter.MyViewHolder>(diffCallback) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = MyViewHolder.from(parent, itemCallback)
+
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        holder.bind(currentList[position])
+    }
+
+    class MyViewHolder(
+            private val binding: MineGridRecycleItemBinding,
+            private val itemCallback: (Pair<Int, Int>) -> Unit,
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(item: Pair<Int, Int>) {
+            binding.iv.setImageResource(item.first)
+            binding.tv.setText(item.second)
+            itemView.setOnClickListener { itemCallback.invoke(item) }
+        }
+
+        companion object {
+            fun from(parent: ViewGroup, itemCallback: (Pair<Int, Int>) -> Unit): MyViewHolder {
+                val inflater = LayoutInflater.from(parent.context)
+                val binding = MineGridRecycleItemBinding.inflate(inflater, parent, false)
+                return MyViewHolder(binding, itemCallback)
+            }
+        }
+    }
+
+    companion object {
+        private val diffCallback = object : DiffUtil.ItemCallback<Pair<Int, Int>>() {
+            override fun areItemsTheSame(oldItem: Pair<Int, Int>, newItem: Pair<Int, Int>): Boolean {
+                return false
+            }
+
+            override fun areContentsTheSame(oldItem: Pair<Int, Int>, newItem: Pair<Int, Int>): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
+
 
 }
 package cc.buqianjin.client.ui.mine
@@ -69,95 +611,61 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.android.reward.source.UserRepository
 
-class FeedbackModelFactory(private val userRepository: UserRepository): ViewModelProvider.NewInstanceFactory() {
+class MineModelFactory(private val userRepository: UserRepository): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return FeedbackViewModel(userRepository) as T
+        return MineViewModel(userRepository) as T
     }
 }
 package cc.buqianjin.client.ui.mine
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.MediaScannerConnection
-import android.os.Environment
-import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import cc.buqianjin.client.R
-import cc.buqianjin.client.model.UserFeedBack
+import cc.buqianjin.client.extension.msg
+import cc.buqianjin.client.extension.toMoney
 import com.android.base.extension.io2main
 import com.android.reward.source.UserRepository
-import com.android.base.parseserver.ParseClassUtils
 import com.android.base.util.LogUtils
 import com.android.base.util.Utils
-import io.reactivex.Single
+import com.android.reward.data.SilverUser
 import io.reactivex.disposables.CompositeDisposable
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
-class FeedbackViewModel(private val userRepository: UserRepository) : ViewModel() {
+class MineViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val compositeDisposable = CompositeDisposable()
-    private val _toast = MutableLiveData<Int>()
-    val toast: LiveData<Int> = _toast
+    private val _user = MutableLiveData<SilverUser>().apply { value = null }
+    val user: LiveData<SilverUser> = _user
+    private val _toast = MutableLiveData<String>()
+    val toast: LiveData<String> = _toast
+    private val _coin = MutableLiveData<Long>()
+    val coin: LiveData<Long> = _coin
+    val money: LiveData<String> = coin.map {
+        it.toMoney()
+    }
+    private val _navigationToWithdraw =  MutableLiveData<Boolean>().apply { value = false }
+    val navigationToWithdraw: LiveData<Boolean> = _navigationToWithdraw
 
-    fun submit(content: String?, contact: String?) {
-        if (TextUtils.isEmpty(content) || TextUtils.isEmpty(content!!.trim())) {
-            _toast.value = R.string.feedback_content_empty
-            return
-        }
-        val userFeedBack = UserFeedBack()
-        userFeedBack.contact = contact?.trim() ?: ""
-        userFeedBack.content = content
-        userFeedBack.userId = userRepository.cachedSilverUser?.userid ?: ""
-//        userFeedBack.setUtdid(AccountManager.get().getUtdid())
-        ParseClassUtils.save(userFeedBack) { e ->
-            _toast.value = if (e == null) R.string.feedback_submit_success else R.string.feedback_submit_fail
-        }
+    fun getUserInfo() {
+        compositeDisposable.add(userRepository.getUserInfo().io2main().subscribe({
+            LogUtils.d(TAG, "getUserInfo: $it")
+            _user.value = it
+            _coin.value = it.assets
+        }, {
+            _user.value = null
+            _toast.value = it.msg
+            LogUtils.e(TAG, "getUserInfo error: $it")
+        }))
     }
 
-    fun saveWeChatQrCode() {
-        compositeDisposable.add(
-                Single.create<Boolean> {
-                    val result = saveWeChatQrCodeToPicture()
-                    if (it.isDisposed) return@create
-                    it.onSuccess(result)
-                }
-                        .io2main()
-                        .subscribe({
-                            LogUtils.d(TAG, "saveWeChatQrCode success: $it")
-                            if (it) {
-                                _toast.value = R.string.feedback_qr_code_save_success
-                            } else {
-                                _toast.value = R.string.feedback_qr_code_save_fail
-                            }
-                        }, {
-                            LogUtils.e(TAG, "saveWeChatQrCode error: $it")
-                            _toast.value = R.string.feedback_qr_code_save_fail
-                        }))
-    }
-
-    private fun saveWeChatQrCodeToPicture(): Boolean {
-        val appDir = Utils.getApp().getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: return false
-        if (!appDir.exists()) {
-            appDir.mkdirs()
-        }
-        val fileName: String = Utils.getApp().getString(R.string.feedback_qr_code_name).toString() + ".jpg"
-        val file = File(appDir, fileName)
-        try {
-            val bitmap = BitmapFactory.decodeResource(Utils.getApp().resources, R.drawable.feedback_qr_code)
-            val fos = FileOutputStream(file)
-            val isSuccess = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-            fos.flush()
-            fos.close()
-            //将该文件扫描到相册
-            MediaScannerConnection.scanFile(Utils.getApp(), arrayOf(file.path), null, null)
-            return isSuccess
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return false
+    fun bindWx() {
+        compositeDisposable.add(userRepository.bindWx().subscribe({
+            LogUtils.d(TAG, "bindWx: $it")
+            _user.value = it
+        }, {
+            _toast.value = it.msg
+            LogUtils.e(TAG, "bindWx error: $it")
+        }))
     }
 
     override fun onCleared() {
@@ -167,8 +675,20 @@ class FeedbackViewModel(private val userRepository: UserRepository) : ViewModel(
         }
     }
 
+    fun handleWithdrawClick() {
+        if (userRepository.isLogin()) {
+            _navigationToWithdraw.value = true
+        } else {
+            _toast.value = Utils.getApp().getString(R.string.common_login_first)
+        }
+    }
+
+    fun onWithdrawNavigated() {
+        _navigationToWithdraw.value = false
+    }
+
     companion object {
-        private const val TAG = "FeedbackViewModel"
+        private const val TAG = "MineViewModel"
     }
 }
 package cc.buqianjin.client.ui.mine
@@ -203,5 +723,1533 @@ class NewHandStrategyActivity : BaseActivity<NoViewModel, NewHandStrategyActivit
             tvTitle.setText(R.string.new_hand_strategy_item_title_3)
             tvContent.setText(R.string.new_hand_strategy_item_content_3)
         }
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.os.Bundle
+import android.view.View
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColor
+import cc.buqianjin.client.BuildConfig
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.SettingsActivityBinding
+import cc.buqianjin.client.extension.startActivity
+import cc.buqianjin.client.extension.toColorInt
+import cc.buqianjin.client.ui.common.KEY_IS_SIGN_IN_REMINDER_ENABLED
+import cc.buqianjin.client.util.AppConst
+import cc.buqianjin.client.util.BarUtils
+import cc.buqianjin.client.util.InjectUtil
+import com.android.base.util.ConvertUtils
+import com.android.base.util.SPUtils
+import com.android.base.util.ToastUtils
+import com.android.base.util.Utils
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.jaeger.library.StatusBarUtil
+
+class SettingsActivity : BaseActivity<NoViewModel, SettingsActivityBinding>(), View.OnClickListener {
+
+    private val model by viewModels<SettingsViewModel> { InjectUtil.getSettingsModelFactory() }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 改变状态栏颜色为白色透明的
+        StatusBarUtil.setColor(this, ContextCompat.getColor(Utils.getApp(), R.color.white), 0)
+        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbarSettings)
+        StatusBarUtil.setLightMode(this)
+        binding.toolbarSettings.setNavigationOnClickListener { finish() }
+        binding.toolbarLogOff.visibility = if (model.isWxBind) View.VISIBLE else View.GONE
+        binding.toolbarLogOff.setOnClickListener { startActivity<LogOffActivity>() }
+        setupItems()
+        subscribeToast()
+        subscribeNeedUpdate()
+        subscribeVersionUpdateBean()
+        subscribeCalculateCache()
+        model.checkUpdate(isUserClick = false)
+        model.calculateCache()
+    }
+
+    private fun subscribeCalculateCache() {
+        model.cacheSize.observe(this) {
+            if (it >= 0L) {
+                binding.itemClearCache.tvNewVersionFound.visibility = View.VISIBLE
+                binding.itemClearCache.tvNewVersionFound.text = ConvertUtils.byte2MemorySizeWithUnit(it)
+            } else {
+                binding.itemClearCache.tvNewVersionFound.visibility = View.INVISIBLE
+            }
+        }
+    }
+
+    private fun setupItems() {
+        binding.itemPrivacyPolicy.apply {
+            tvTitle.setText(R.string.privacy_policy_title)
+            cvItem.setOnClickListener(this@SettingsActivity)
+        }
+        binding.itemUserAgreement.apply {
+            tvTitle.setText(R.string.user_agreement_title)
+            cvItem.setOnClickListener(this@SettingsActivity)
+        }
+        binding.itemSignInReminder.apply {
+            tvTitle.setText(R.string.settings_sign_in_reminder)
+            ivArrow.visibility = View.INVISIBLE
+            ivSwitch.visibility = View.VISIBLE
+            ivSwitch.setImageResource(
+                    if (SPUtils.instance().getBoolean(KEY_IS_SIGN_IN_REMINDER_ENABLED, false))
+                        R.drawable.settings_switch_on
+                    else
+                        R.drawable.settings_switch_off
+            )
+            cvItem.setOnClickListener(this@SettingsActivity)
+        }
+        binding.itemCurrentVersion.apply {
+            tvTitle.setText(R.string.settings_current_version)
+            cvItem.setOnClickListener(this@SettingsActivity)
+            tvNewVersionFound.visibility = View.VISIBLE
+            tvNewVersionFound.text = getString(R.string.settings_current_version_name, BuildConfig.VERSION_NAME)
+            tvNewVersionFound.setTextColor(R.color.common_desc_text_color.toColorInt())
+        }
+        binding.itemHomepage.apply {
+            tvTitle.setText(R.string.settings_official_website_homepage)
+            cvItem.setOnClickListener(this@SettingsActivity)
+        }
+        binding.itemClearCache.apply {
+            tvTitle.setText(R.string.settings_clear_cache)
+            tvNewVersionFound.setTextColor(R.color.common_desc_text_color.toColorInt())
+            cvItem.setOnClickListener(this@SettingsActivity)
+        }
+        binding.itemRepairTool.apply {
+            root.visibility = if (isShowRepairToolEntrance()) View.VISIBLE else View.GONE
+            tvTitle.setText(R.string.repair_tool_title)
+            cvItem.setOnClickListener(this@SettingsActivity)
+        }
+    }
+
+    private fun subscribeToast() {
+        model.toast.observe(this) { msg ->
+            msg?.let {
+                ToastUtils.showToast(Utils.getApp(), it)
+            }
+        }
+    }
+
+    private fun subscribeNeedUpdate() {
+        model.needUpdate.observe(this) { needUpdate: Boolean? ->
+            when (needUpdate) {
+                false -> {
+                    binding.itemCurrentVersion.tvNewVersionFound.visibility = View.VISIBLE
+                    binding.itemCurrentVersion.tvNewVersionFound.text = getString(R.string.settings_current_version_name, BuildConfig.VERSION_NAME)
+                    binding.itemCurrentVersion.tvNewVersionFound.setTextColor(R.color.common_desc_text_color.toColorInt())
+                }
+                true -> {
+                    binding.itemCurrentVersion.tvNewVersionFound.visibility = View.VISIBLE
+                    binding.itemCurrentVersion.tvNewVersionFound.setText(R.string.settings_new_version_found)
+                    binding.itemCurrentVersion.tvNewVersionFound.setTextColor(R.color.colorPrimary.toColorInt())
+                }
+            }
+        }
+    }
+
+    private fun subscribeVersionUpdateBean() {
+        model.versionUpdateBean.observe(this) { bean ->
+            bean?.let {
+                VersionUpdateDialogFragment.showVersionUpdateDialog(this, it.versionUrl)
+            }
+        }
+    }
+
+    override fun getLayoutId() = R.layout.settings_activity
+
+    override fun onClick(v: View) {
+        when (v) {
+            binding.itemPrivacyPolicy.cvItem -> {
+                WebViewActivity.start(this@SettingsActivity, getString(R.string.privacy_policy_title), AppConst.URL_PRIVACY_POLICY)
+            }
+            binding.itemUserAgreement.cvItem -> {
+                WebViewActivity.start(this@SettingsActivity, getString(R.string.user_agreement_title), AppConst.URL_USER_AGREEMENT)
+            }
+            binding.itemSignInReminder.cvItem -> {
+                val flag = SPUtils.instance().getBoolean(KEY_IS_SIGN_IN_REMINDER_ENABLED, false)
+                val newFlag = !flag
+                SPUtils.instance().put(KEY_IS_SIGN_IN_REMINDER_ENABLED, newFlag)
+                binding.itemSignInReminder.ivSwitch.setImageResource(
+                        if (newFlag)
+                            R.drawable.settings_switch_on
+                        else
+                            R.drawable.settings_switch_off
+                )
+                ToastUtils.showToast(Utils.getApp(),
+                        if (newFlag)
+                            R.string.settings_sign_in_reminder_enabled
+                        else
+                            R.string.settings_sign_in_reminder_disabled
+                )
+            }
+            binding.itemCurrentVersion.cvItem -> {
+                model.checkUpdate(isUserClick = true)
+            }
+            binding.itemHomepage.cvItem -> {
+                WebViewActivity.start(this@SettingsActivity, getString(R.string.settings_official_website_homepage), AppConst.URL_HOMEPAGE)
+            }
+            binding.itemClearCache.cvItem -> {
+                model.clearCache()
+            }
+            binding.itemRepairTool.cvItem -> {
+                startActivity<RepairToolActivity>()
+            }
+        }
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.reward.source.UserRepository
+
+class SettingsModelFactory(private val userRepository: UserRepository) : ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return SettingsViewModel(userRepository) as T
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import cc.buqianjin.client.BuildConfig
+import cc.buqianjin.client.R
+import cc.buqianjin.client.model.VersionUpdateBean
+import com.android.base.extension.io2main
+import com.android.reward.source.UserRepository
+import com.android.base.parseserver.constant.ParseTable
+import com.android.base.util.FileUtils
+import com.android.base.util.LogUtils
+import com.android.base.util.Utils
+import com.parse.GetCallback
+import com.parse.ParseObject
+import com.parse.ParseQuery
+import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
+
+class SettingsViewModel(private val userRepository: UserRepository) : ViewModel() {
+    private val compositeDisposable = CompositeDisposable()
+    private val _toast = MutableLiveData<String>()
+    val toast: LiveData<String> = _toast
+    private val _needUpdate = MutableLiveData<Boolean>().apply { value = null }
+    val needUpdate: LiveData<Boolean> = _needUpdate
+    private val _versionUpdateBean = MutableLiveData<VersionUpdateBean>().apply { value = null }
+    val versionUpdateBean: LiveData<VersionUpdateBean> = _versionUpdateBean
+    private val _cacheSize = MutableLiveData<Long>().apply { value = -1L }
+    val cacheSize get() = _cacheSize
+    val isWxBind: Boolean
+        get() {
+            return userRepository.isWxBind()
+        }
+
+    fun checkUpdate(isUserClick: Boolean) {
+        val query: ParseQuery<ParseObject> = ParseQuery.getQuery(ParseTable.APP_VERSION)
+        query.whereEqualTo(ParseTable.Column.PKG, BuildConfig.APPLICATION_ID)
+        query.getFirstInBackground(GetCallback { obj, e ->
+            if (obj == null || e != null) {
+                if (isUserClick) {
+                    _toast.value = Utils.getApp().getString(R.string.settings_current_is_latest_version)
+                } else {
+                    _needUpdate.value = false
+                }
+                return@GetCallback
+            }
+            val versionCode = obj.getInt(ParseTable.Column.VERSION_CODE)
+            if (versionCode > BuildConfig.VERSION_CODE) {
+                val bean = VersionUpdateBean()
+                bean.versionName = obj.getString(ParseTable.Column.VERSION)
+                bean.versionCode = versionCode
+                bean.versionContent = obj.getString(ParseTable.Column.CONTENT)
+                if (isUserClick) {
+                    _versionUpdateBean.value = bean
+                } else {
+                    _needUpdate.value = true
+                }
+            } else {
+                if (isUserClick) {
+                    _toast.value = Utils.getApp().getString(R.string.settings_current_is_latest_version)
+                } else {
+                    _needUpdate.value = false
+                }
+            }
+        })
+    }
+
+    fun calculateCache() {
+        compositeDisposable.add(Single.create<Long> {
+            val cacheDir = Utils.getApp().cacheDir
+            if (it.isDisposed) return@create
+            it.onSuccess(if (cacheDir.exists()) {
+                FileUtils.getTotalSizeOfFilesInDir(cacheDir)
+            } else {
+                0L
+            })
+        }.io2main().subscribe({
+            _cacheSize.value = it
+        }, {
+            LogUtils.e(TAG, "calculateCache error: $it")
+        }))
+    }
+
+    fun clearCache() {
+        compositeDisposable.add(Single.create<Boolean> {
+            val cacheDir = Utils.getApp().cacheDir
+            FileUtils.deleteFile(cacheDir.absolutePath)
+            if (it.isDisposed) return@create
+            it.onSuccess(true)
+        }.io2main().subscribe({
+            _toast.value = Utils.getApp().getString(R.string.settings_clear_cache_success)
+            _cacheSize.value = 0L
+        }, {
+            LogUtils.e(TAG, "clearCache error: $it")
+        }))
+    }
+
+    companion object {
+        private const val TAG = "SettingsViewModel"
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.graphics.Paint
+import android.os.Bundle
+import android.text.TextUtils
+import android.view.View
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import cc.buqianjin.client.GlideApp
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.WithdrawActivityBinding
+import cc.buqianjin.client.extension.setSmoothProgress
+import cc.buqianjin.client.extension.startActivity
+import cc.buqianjin.client.extension.toColorInt
+import cc.buqianjin.client.ui.common.KEY_IS_SETTLEMENT_AGREEMENT_AGREED
+import cc.buqianjin.client.ui.common.MAX_COIN_TODAY
+import cc.buqianjin.client.ui.common.TimeChangeReceiverHelper
+import cc.buqianjin.client.ui.dialog.DialogBuilder
+import cc.buqianjin.client.util.AppConst
+import cc.buqianjin.client.util.AppConst.Placement.Companion.NATIVE_WITHDRAW
+import cc.buqianjin.client.util.AppConst.Placement.Companion.REWARD_WITHDRAW
+import cc.buqianjin.client.util.BarUtils
+import cc.buqianjin.client.util.InjectUtil
+import com.android.base.parseserver.ParseRemoteConfig
+import com.android.base.view.GridSpaceDecoration
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.android.reward.constant.KEY_HAS_WITHDRAWN_TODAY
+import com.android.reward.helper.NativeAdHelper
+import com.android.reward.helper.NativeAdLifecycleHelper
+import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.RoundedCornerTreatment
+import com.google.android.material.shape.ShapeAppearanceModel
+import com.jaeger.library.StatusBarUtil
+import kotlin.math.min
+
+class WithdrawActivity : BaseActivity<NoViewModel, WithdrawActivityBinding>(), View.OnClickListener {
+
+    private val model by viewModels<WithdrawViewModel> { InjectUtil.getWithdrawModelFactory() }
+    private lateinit var adapter: WithdrawMoneyListAdapter
+    private val nativeAdHelper = NativeAdLifecycleHelper(this)
+    private val timeChangeReceiverHelper = TimeChangeReceiverHelper(this) {
+        model.forceGetTodayEarningCoin()
+    }
+    override fun getLayoutId() = R.layout.withdraw_activity
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        StatusBarUtil.setColor(this, ContextCompat.getColor(Utils.getApp(), R.color.white), 0)
+        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbar)
+        StatusBarUtil.setLightMode(this)
+        binding.toolbar.setNavigationOnClickListener { onBackPressed() }
+        initViews()
+        setupWithdrawRecordTextBg()
+        setupListeners()
+        setupMoneyItems()
+        subscribeWxBind()
+        subscribeAssets()
+        updateProgressContainer(0)
+        subscribeTodayEarningCoin()
+        subscribeUserInfo()
+        subscribeMoneyItems()
+        subscribeNeedMoneyNumber()
+        subscribeToast()
+        subscribeBtnText()
+        subscribeShowBindWxDialog()
+        model.loadAssets()
+        model.getTodayEarningCoin()
+        model.checkWithdrawBtnText()
+        loadNativeAd()
+    }
+
+    private fun setupWithdrawRecordTextBg() {
+        val shapeAppearanceModel = ShapeAppearanceModel.builder().setAllCornerSizes(DensityUtils.dp2px(this, 20f).toFloat())
+                .setAllCorners(RoundedCornerTreatment()).build()
+        binding.tvWithdrawRecord.background = MaterialShapeDrawable(shapeAppearanceModel).apply {
+            paintStyle = Paint.Style.STROKE
+            setStroke(DensityUtils.dp2px(this@WithdrawActivity, 1f).toFloat(), R.color.colorPrimary.toColorInt())
+        }
+    }
+
+    private fun loadNativeAd() {
+        nativeAdHelper.loadNativeAd(this, ScreenUtils.getWidthDp(), NATIVE_WITHDRAW, {
+            binding.flAdContainer.removeAllViews()
+            binding.flAdContainer.addView(it)
+            binding.viewDivider4.visibility = View.VISIBLE
+
+            if (ParseRemoteConfig.getInstance().getBool(AppConst.ConfigKey.BANNER_FAKE_CLOSE)) {
+                // Add fake close button
+                NativeAdHelper.addFakeCloseButton(binding.flAdContainer)
+            }
+        }, {
+            binding.viewDivider4.visibility = View.GONE
+        }, {
+            NativeAdHelper.removeFakeCloseButton(binding.flAdContainer)
+        })
+    }
+
+    private fun subscribeShowBindWxDialog() {
+        model.showBindWxDialog.observe(this) {
+            if (it) {
+                DialogBuilder()
+                        .setTitle(getString(R.string.withdraw_bind_wechat_dialog_title))
+                        .setMessage(getString(R.string.withdraw_bind_wechat_dialog_message))
+                        .setCancelBtn(getString(R.string.withdraw_bind_wechat_dialog_cancel)) {}
+                        .setOkBtn(getString(R.string.withdraw_bind_wechat_dialog_go_bind)) { model.bindWx() }
+                        .show(supportFragmentManager)
+                model.onShowBindWxDialogDone()
+            }
+        }
+    }
+
+    private fun subscribeBtnText() {
+        model.btnText.observe(this) {
+            binding.includeWithdrawBottom.btnWithdrawRightNow.text = it
+            if (TextUtils.equals(it, Utils.getApp().getString(R.string.withdraw_withdraw_right_now))) {
+                binding.includeWithdrawBottom.btnWithdrawRightNow.isEnabled = true
+                binding.includeWithdrawBottom.btnWithdrawRightNow.setOnClickListener(this@WithdrawActivity)
+            } else {
+                binding.includeWithdrawBottom.btnWithdrawRightNow.isEnabled = false
+            }
+        }
+    }
+
+    private fun initViews() {
+        val flag = SPUtils.instance().getBoolean(KEY_IS_SETTLEMENT_AGREEMENT_AGREED, true)
+        binding.includeWithdrawBottom.ivCheckboxAgree.isChecked = flag
+    }
+
+    private fun setupListeners() {
+        binding.includeWithdrawWechatUnbound.tvGoBindWechat.setOnClickListener(this)
+        binding.includeWithdrawBottom.ivCheckboxAgree.setOnCheckedChangeListener { _, isChecked ->
+            SPUtils.instance().put(KEY_IS_SETTLEMENT_AGREEMENT_AGREED, isChecked)
+        }
+        binding.includeWithdrawBottom.tvSettlementAgreement.setOnClickListener(this)
+        binding.includeWithdrawBottom.tvAgreeSettlement.setOnClickListener(this)
+        binding.tvWithdrawRecord.setOnClickListener(this)
+    }
+
+    private fun subscribeNeedMoneyNumber() {
+        model.needMoneyNumber.observe(this) {
+            binding.includeWithdrawBottom.tvCheckedNumber.text = it.toString()
+        }
+    }
+
+    private fun subscribeMoneyItems() {
+        model.moneyItems.observe(this) {
+            adapter.submitList(it)
+        }
+    }
+
+    private fun updateProgressContainer(todayEarningCoin: Int) {
+        val needCoin = if (MAX_COIN_TODAY - todayEarningCoin > 0) {
+            MAX_COIN_TODAY - todayEarningCoin
+        } else {
+            0
+        }
+        val progress = NumberUtil.getPercent(todayEarningCoin, MAX_COIN_TODAY)
+        binding.includeWithdrawProgress.pbProgress.setSmoothProgress(progress)
+        val tipMsg = if (!TextUtils.isEmpty(CacheUtils.getStringByDay(KEY_HAS_WITHDRAWN_TODAY))) {
+            // 今日已提现
+            getString(R.string.withdraw_has_withdrawn_today)
+        } else if (needCoin > 0) {
+            HtmlCompat.fromHtml(getString(R.string.withdraw_progress_tip,
+                    100 - progress), HtmlCompat.FROM_HTML_MODE_LEGACY)
+        } else {
+            getString(R.string.withdraw_progress_tip_receive)
+        }
+        binding.includeWithdrawProgress.tvEarningCoinTip.text = tipMsg
+        binding.includeWithdrawProgress.clProgressContainer.visibility = View.VISIBLE
+    }
+
+    private fun setupMoneyItems() {
+        binding.rvMoneyList.layoutManager = GridLayoutManager(this, 3)
+        binding.rvMoneyList.itemAnimator = null
+        binding.rvMoneyList.addItemDecoration(GridSpaceDecoration(
+                DensityUtils.dp2px(this, 6F),
+                0,
+                DensityUtils.dp2px(this, 15F),
+                DensityUtils.dp2px(this, 15F),
+                DensityUtils.dp2px(this, 15F),
+                0,
+        ))
+        adapter = WithdrawMoneyListAdapter {
+            model.handMoneyItemClick(it)
+        }
+        binding.rvMoneyList.adapter = adapter
+    }
+
+    private fun subscribeUserInfo() {
+        model.user.observe(this) {
+            if (it != null) {
+                GlideApp.with(this)
+                        .load(it.headIcon)
+                        .placeholder(R.drawable.mine_guest)
+                        .error(R.drawable.mine_guest)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(binding.includeWithdrawWechatBound.ivWechatBoundIcon)
+                binding.includeWithdrawWechatBound.tvNickName.text = it.nickName ?: ""
+            }
+        }
+    }
+
+    private fun subscribeWxBind() {
+        model.wxBind.observe(this) {
+            if (it) {
+                binding.includeWithdrawWechatUnbound.clWechatUnbound.visibility = View.INVISIBLE
+                binding.includeWithdrawWechatBound.clWechatBound.visibility = View.VISIBLE
+            } else {
+                binding.includeWithdrawWechatUnbound.clWechatUnbound.visibility = View.VISIBLE
+                binding.includeWithdrawWechatBound.clWechatBound.visibility = View.INVISIBLE
+            }
+        }
+    }
+
+    private fun subscribeAssets() {
+        model.assets.observe(this) {
+            if (it != null) {
+                binding.tvGoldCoinNumber.text = it.toString()
+            }
+        }
+    }
+
+    private fun subscribeTodayEarningCoin() {
+        model.todayEarningCoin.observe(this) { coin ->
+            updateProgressContainer(coin)
+        }
+    }
+
+    private fun subscribeToast() {
+        model.toast.observe(this) { msg ->
+            msg?.let {
+                ToastUtils.showToast(Utils.getApp(), it)
+            }
+        }
+    }
+
+    override fun onClick(v: View) {
+        when (v) {
+            binding.includeWithdrawWechatUnbound.tvGoBindWechat -> model.bindWx()
+            binding.includeWithdrawBottom.tvSettlementAgreement ->
+                WebViewActivity.start(this@WithdrawActivity,
+                        getString(R.string.settlement_agreement_title), AppConst.URL_SETTLEMENT_AGREEMENT)
+            binding.includeWithdrawBottom.btnWithdrawRightNow -> model.withdraw(this@WithdrawActivity, binding.includeWithdrawBottom.ivCheckboxAgree.isChecked, REWARD_WITHDRAW)
+            binding.includeWithdrawBottom.tvAgreeSettlement -> binding.includeWithdrawBottom.ivCheckboxAgree.isChecked = !binding.includeWithdrawBottom.ivCheckboxAgree.isChecked
+            binding.tvWithdrawRecord -> startActivity<WithdrawRecordActivity>()
+        }
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.reward.source.UserRepository
+import com.android.reward.source.WithdrawRepository
+
+class WithdrawModelFactory(
+        private val userRepository: UserRepository
+
+) : ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return WithdrawViewModel(userRepository) as T
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.WithdrawMoneyRecycleItemBinding
+import cc.buqianjin.client.extension.toColorInt
+
+class WithdrawMoneyListAdapter(
+        private val itemCallback: (WithdrawMoneyItem) -> Unit,
+) : ListAdapter<WithdrawMoneyListAdapter.WithdrawMoneyItem, WithdrawMoneyListAdapter.MoneyViewHolder>(diffCallback) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoneyViewHolder {
+        return MoneyViewHolder.from(parent, itemCallback)
+    }
+
+    override fun onBindViewHolder(holder: MoneyViewHolder, position: Int) {
+        holder.bindItem(currentList[position])
+    }
+
+    class MoneyViewHolder private constructor(
+            private val binding: WithdrawMoneyRecycleItemBinding,
+            private val itemCallback: (WithdrawMoneyItem) -> Unit,
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bindItem(bean: WithdrawMoneyItem) {
+            binding.tvMoney.text = bean.money
+//            binding.tvPrice.text = itemView.context.getString(R.string.withdraw_price, bean.price.toString())
+            if (bean.checked) {
+                binding.tvMoney.setTextColor(R.color.colorPrimary.toColorInt())
+                binding.clBg.setBackgroundResource(R.drawable.withdraw_withdraw_money_checked_bg)
+                binding.ivCheck.visibility = View.VISIBLE
+            } else {
+                binding.tvMoney.setTextColor(R.color.common_title_text_color.toColorInt())
+                binding.clBg.setBackgroundResource(R.drawable.withdraw_withdraw_money_unchecked_bg)
+                binding.ivCheck.visibility = View.INVISIBLE
+            }
+            itemView.setOnClickListener { itemCallback.invoke(bean) }
+        }
+
+        companion object {
+            fun from(parent: ViewGroup, itemCallback: (WithdrawMoneyItem) -> Unit): MoneyViewHolder {
+                val inflater = LayoutInflater.from(parent.context)
+                val binding = WithdrawMoneyRecycleItemBinding.inflate(inflater, parent, false)
+                return MoneyViewHolder(binding, itemCallback)
+            }
+        }
+    }
+
+    data class WithdrawMoneyItem(
+            val money: String,
+            val price: Long,
+            val checked: Boolean = false,
+    )
+
+    companion object {
+        private val diffCallback = object : DiffUtil.ItemCallback<WithdrawMoneyItem>() {
+            override fun areItemsTheSame(oldItem: WithdrawMoneyItem, newItem: WithdrawMoneyItem): Boolean {
+                // 直接去比较内容吧
+                return false
+            }
+
+            override fun areContentsTheSame(oldItem: WithdrawMoneyItem, newItem: WithdrawMoneyItem): Boolean {
+                return oldItem == newItem
+            }
+
+        }
+    }
+
+
+}
+package cc.buqianjin.client.ui.mine
+
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.WithdrawRecordActivityBinding
+import cc.buqianjin.client.ui.load.LoadStatus
+import cc.buqianjin.client.ui.load.callback.EmptyRecordCallback
+import cc.buqianjin.client.ui.load.callback.ErrorCallback
+import cc.buqianjin.client.ui.load.callback.LoadingCallback
+import cc.buqianjin.client.ui.load.callback.LoadingTodayStepRewardCallback
+import cc.buqianjin.client.ui.main.MainActivity
+import cc.buqianjin.client.util.BarUtils
+import cc.buqianjin.client.util.InjectUtil
+import com.android.base.util.ActivityCollector
+import com.android.base.util.ToastUtils
+import com.android.base.util.Utils
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.jaeger.library.StatusBarUtil
+import com.kingja.loadsir.core.LoadService
+import com.kingja.loadsir.core.LoadSir
+import com.kingja.loadsir.core.Transport
+
+class WithdrawRecordActivity: BaseActivity<NoViewModel, WithdrawRecordActivityBinding>() {
+
+    private val model by viewModels<WithdrawRecordViewModel> { InjectUtil.getWithdrawRecordModelFactory()}
+    private val adapter = WithdrawRecordListAdapter()
+    override fun getLayoutId() = R.layout.withdraw_record_activity
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        StatusBarUtil.setColor(this, ContextCompat.getColor(Utils.getApp(), R.color.white), 0)
+        BarUtils.addMarginTopEqualStatusBarHeight(binding.toolbar)
+        StatusBarUtil.setLightMode(this)
+        binding.toolbar.setNavigationOnClickListener { onBackPressed() }
+        setupList()
+        setupLoadSir()
+        subscribeToast()
+        subscribeLoadStatus()
+        subscribeWithdrawRecords()
+        model.loadWithdrawRecords()
+    }
+
+    private fun setupLoadSir() {
+        val loadSir = LoadSir.Builder()
+                .addCallback(LoadingCallback())
+                .addCallback(ErrorCallback(false))
+                .addCallback(EmptyRecordCallback())
+                .setDefaultCallback(LoadingCallback::class.java)
+                .build()
+        loadService = loadSir.register(binding.recyclerView) { v: View? ->
+            loadService.showCallback(LoadingCallback::class.java)
+            model.loadWithdrawRecords()
+        }
+        loadService.setCallBack(EmptyRecordCallback::class.java) { _, view ->
+            val btnAction = view.findViewById<Button>(R.id.btn_action)
+            btnAction.setOnClickListener {
+                // 关闭掉提现页面
+                ActivityCollector.getActivity(WithdrawActivity::class.java)?.finish()
+                // 跳转首页
+                val mainActivity: MainActivity? = ActivityCollector.getActivity(MainActivity::class.java)
+                mainActivity?.selectHomeBottomTab()
+                onBackPressed()
+            }
+        }
+    }
+
+    private fun subscribeWithdrawRecords() {
+        model.withdrawRecords.observe(this) {
+            adapter.submitList(it)
+        }
+    }
+
+    private fun subscribeToast() {
+        model.toast.observe(this) { msg ->
+            msg?.let {
+                ToastUtils.showToast(Utils.getApp(), it)
+            }
+        }
+    }
+    private fun subscribeLoadStatus() {
+        model.loadStatus.observe(this, { loadStatus ->
+            loadStatus?.let {
+                when (it) {
+                    LoadStatus.SUCCESS -> {
+                        binding.root.post { loadService.showSuccess() }
+                    }
+                    LoadStatus.EMPTY -> {
+                        loadService.showCallback(EmptyRecordCallback::class.java)
+                    }
+                    LoadStatus.SERVER_ERROR -> {
+                        loadService.showCallback(ErrorCallback::class.java)
+                    }
+                    LoadStatus.LOADING -> {
+                        loadService.showCallback(LoadingCallback::class.java)
+                    }
+                }
+            }
+        })
+    }
+
+    private fun setupList() {
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.itemAnimator = null
+        binding.recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL).apply {
+            setDrawable(ContextCompat.getDrawable(this@WithdrawRecordActivity, R.drawable.withdraw_record_divider)!!)
+        })
+        binding.recyclerView.adapter = adapter
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.WithdrawRecordRecycleItemBinding
+import cc.buqianjin.client.extension.toColorInt
+import cc.buqianjin.client.model.WithdrawRecordEx
+import com.android.base.util.DateUtils
+import com.android.reward.data.WithdrawRecord
+import com.android.reward.data.WithdrawRecordStatusEnum
+import java.lang.IllegalArgumentException
+
+class WithdrawRecordListAdapter : ListAdapter<WithdrawRecordEx, RecyclerView.ViewHolder>(diffCallback) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
+        WithdrawRecordEx.TYPE_RECORD -> WithdrawRecordViewHolder.from(parent)
+        WithdrawRecordEx.TYPE_LIST_LIMIT -> ListLimitViewHolder.from(parent)
+        else -> throw IllegalArgumentException("unknown type: $viewType")
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is WithdrawRecordViewHolder) holder.bind(currentList[position])
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return currentList[position].type
+    }
+
+    class WithdrawRecordViewHolder private constructor(
+            private val binding: WithdrawRecordRecycleItemBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(item: WithdrawRecord) {
+            binding.tvTimeStamp.text = DateUtils.dateFormat(item.timeMillis, "yyyy-MM-dd HH:mm:ss")
+            binding.tvMoney.text = itemView.resources.getString(R.string.withdraw_record_money, item.cash)
+            binding.tvState.text = when (item.status) {
+                WithdrawRecordStatusEnum.STATUS_EXAMINING.code -> WithdrawRecordStatusEnum.STATUS_EXAMINING.desc
+                WithdrawRecordStatusEnum.STATUS_EXAMINE_PASS.code -> WithdrawRecordStatusEnum.STATUS_EXAMINE_PASS.desc
+                WithdrawRecordStatusEnum.STATUS_WITHDRAW_SUCCESS.code -> WithdrawRecordStatusEnum.STATUS_WITHDRAW_SUCCESS.desc
+                WithdrawRecordStatusEnum.STATUS_WITHDRAW_FAIL.code -> WithdrawRecordStatusEnum.STATUS_WITHDRAW_FAIL.desc
+                else -> WithdrawRecordStatusEnum.STATUS_EXAMINE_PASS.desc
+            }
+            binding.tvState.setTextColor(
+                    when (item.status) {
+                        WithdrawRecordStatusEnum.STATUS_EXAMINING.code, WithdrawRecordStatusEnum.STATUS_EXAMINE_PASS.code -> R.color.colorPrimary.toColorInt()
+                        WithdrawRecordStatusEnum.STATUS_WITHDRAW_SUCCESS.code -> R.color.withdraw_record_state_withdraw_success_text_color.toColorInt()
+                        WithdrawRecordStatusEnum.STATUS_WITHDRAW_FAIL.code -> R.color.common_desc_text_color.toColorInt()
+                        else -> R.color.colorPrimary.toColorInt()
+                    }
+            )
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): WithdrawRecordViewHolder {
+                val inflater = LayoutInflater.from(parent.context)
+                val binding = WithdrawRecordRecycleItemBinding.inflate(inflater, parent, false)
+                return WithdrawRecordViewHolder(binding)
+            }
+        }
+    }
+
+    companion object {
+        private val diffCallback = object : DiffUtil.ItemCallback<WithdrawRecordEx>() {
+            override fun areItemsTheSame(oldItem: WithdrawRecordEx, newItem: WithdrawRecordEx): Boolean {
+                return false
+            }
+
+            override fun areContentsTheSame(oldItem: WithdrawRecordEx, newItem: WithdrawRecordEx): Boolean {
+                return oldItem == newItem
+            }
+
+        }
+    }
+
+
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.reward.source.UserRepository
+
+class WithdrawRecordModelFactory(
+        private val userRepository: UserRepository
+
+) : ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return WithdrawRecordViewModel(userRepository) as T
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import cc.buqianjin.client.model.WithdrawRecordEx
+import cc.buqianjin.client.ui.load.LoadStatus
+import com.android.base.extension.io2main
+import com.android.base.util.LogUtils
+import com.android.reward.data.ErrorCodeMessageEnum
+import com.android.reward.data.WithdrawRecord
+import com.android.reward.netweork.exception.RewardException
+import com.android.reward.source.UserRepository
+import io.reactivex.disposables.CompositeDisposable
+
+class WithdrawRecordViewModel(private val userRepository: UserRepository) : ViewModel() {
+
+    private val compositeDisposable = CompositeDisposable()
+    private val _withdrawRecords = MutableLiveData<List<WithdrawRecordEx>>().apply { value = emptyList() }
+    val withdrawRecords get() = _withdrawRecords
+    private val _toast = MutableLiveData<String>()
+    val toast: LiveData<String> = _toast
+    private val _loadStatus = MutableLiveData<LoadStatus>().apply { value = LoadStatus.LOADING }
+    val loadStatus get() = _loadStatus
+
+    fun loadWithdrawRecords() {
+        compositeDisposable.add(userRepository.getWithdrawRecords().io2main().subscribe({
+            _withdrawRecords.value = retrofitData(it)
+            LogUtils.d(TAG, "loadWithdrawRecords success: $it")
+            _loadStatus.value = LoadStatus.SUCCESS
+        }, {
+            if (it is RewardException && it.code == ErrorCodeMessageEnum.RESULT_EMPTY_DATA.code) {
+                _loadStatus.value = LoadStatus.EMPTY
+            } else {
+                _loadStatus.value = LoadStatus.SERVER_ERROR
+            }
+            LogUtils.e(TAG, "loadWithdrawRecords fail: $it")
+        }))
+    }
+
+    private fun retrofitData(list: List<WithdrawRecord>): List<WithdrawRecordEx> {
+        val result = mutableListOf<WithdrawRecordEx>()
+        result.addAll(list.map { WithdrawRecordEx.copyFrom(it) })
+        if (list.size >= 14) {
+            result.add(WithdrawRecordEx().apply { type = WithdrawRecordEx.TYPE_LIST_LIMIT })
+        }
+        return result
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!compositeDisposable.isDisposed) {
+            compositeDisposable.dispose()
+        }
+    }
+
+    companion object {
+        private const val TAG = "WithdrawRecordViewModel"
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import androidx.fragment.app.FragmentActivity
+import cc.buqianjin.client.R
+import cc.buqianjin.client.ui.dialog.DialogBuilder
+import com.android.base.util.LogUtils
+import com.android.reward.rewardchain.RewardAbstractHandler
+import com.android.reward.rewardchain.RewardRequestBean
+
+class WithdrawSuccessDialogHandler:  RewardAbstractHandler() {
+    override fun handleRequest(bean: RewardRequestBean) {
+        LogUtils.d(TAG, "显示提现申请成功提示框")
+        DialogBuilder()
+                .setDialogWidth(320)
+                .setWarningLogo(R.mipmap.ic_dialog_withdraw_success_head)
+                .setTitle("提现申请成功")
+                .setMessage("提现申请已提交，预计1-3工作日内审核， 具体审核结果可在提现记录中查看。")
+                .setSubMessage("注：周六日和节假日期间，提现请求将顺延至 工作日处理。")
+                .setOkBtn("知道了") { bean.chainEndCallback.invoke() }
+                .show((bean.activity as FragmentActivity).supportFragmentManager)
+    }
+}
+package cc.buqianjin.client.ui.mine
+
+import android.app.Activity
+import android.text.TextUtils
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import cc.buqianjin.client.R
+import cc.buqianjin.client.extension.msg
+import cc.buqianjin.client.extension.toMinuteSecondFormat
+import cc.buqianjin.client.ui.common.KEY_FIRST_ENTER_TIMESTAMP
+import com.android.base.extension.io2main
+import com.android.base.util.CacheUtils
+import com.android.reward.source.UserRepository
+import com.android.base.util.LogUtils
+import com.android.base.util.SPUtils
+import com.android.base.util.Utils
+import com.android.reward.constant.KEY_HAS_WITHDRAWN_TODAY
+import com.android.reward.data.SilverUser
+import com.android.reward.rewardchain.RewardRequestBean
+import com.android.reward.rewardchain.RewardVideoAdLoadAndShowNormalHandler
+import com.android.reward.rewardchain.WithdrawHandler
+import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import java.lang.Exception
+import java.util.concurrent.TimeUnit
+
+class WithdrawViewModel(
+        private val userRepository: UserRepository
+) : ViewModel() {
+
+    private val compositeDisposable = CompositeDisposable()
+    private val _assets = MutableLiveData<Long>().apply { value = null }
+    val assets get() = _assets
+    // 今日已赚金币
+    private val _todayEarningCoin = MutableLiveData<Int>()
+    val todayEarningCoin: LiveData<Int> = _todayEarningCoin
+    private val _wxBind = MutableLiveData<Boolean>().apply { value = userRepository.isWxBind() }
+    val wxBind get() = _wxBind
+    private val _user = MutableLiveData<SilverUser>().apply {
+        value = if (_wxBind.value == true) userRepository.cachedSilverUser!! else null
+    }
+    val user get() = _user
+    private val _moneyItems = MutableLiveData<List<WithdrawMoneyListAdapter.WithdrawMoneyItem>>().apply {
+        value = listOf(
+                WithdrawMoneyListAdapter.WithdrawMoneyItem(money = "0.3元", price = 3000, checked = true),
+                WithdrawMoneyListAdapter.WithdrawMoneyItem(money = "50元", price = 50_0000),
+                WithdrawMoneyListAdapter.WithdrawMoneyItem(money = "100元", price = 100_0000),
+        )
+    }
+    val moneyItems get() = _moneyItems
+
+    val needMoneyNumber: LiveData<Long> = _moneyItems.map {
+        it.find { item -> item.checked }!!.price
+    }
+    private val _toast = MutableLiveData<String>()
+    val toast: LiveData<String> = _toast
+
+    private val _btnText = MutableLiveData<String>().apply { value = "" }
+    val btnText get() = _btnText
+
+    private val _showBindWxDialog = MutableLiveData<Boolean>().apply { value = false }
+    val showBindWxDialog get() = _showBindWxDialog
+
+    fun loadAssets() {
+        compositeDisposable.add(userRepository.getAssets().io2main().subscribe({
+            _assets.value = it
+            LogUtils.d(TAG, "getAssets success: $it")
+        }, {
+            LogUtils.e(TAG, "getAssets error: $it")
+        }))
+    }
+
+    fun getTodayEarningCoin() {
+        compositeDisposable.add(userRepository.getUserInfo().io2main().subscribe({
+            LogUtils.d(TAG, "getUserInfo: $it")
+            _todayEarningCoin.value = it.currentEarnCoin
+        }, {
+            LogUtils.e(TAG, "getUserInfo error: $it")
+        }))
+    }
+
+    fun bindWx() {
+        compositeDisposable.add(userRepository.bindWx().subscribe({
+            _wxBind.value = true
+            _user.value = it
+            _toast.value = Utils.getApp().getString(R.string.withdraw_bind_wechat_success)
+            LogUtils.d(TAG, "bindWx success: $it")
+        }, {
+            _toast.value = Utils.getApp().getString(R.string.withdraw_bind_wechat_fail) + it.msg
+            LogUtils.d(TAG, "bindWx error: $it")
+        }))
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!compositeDisposable.isDisposed) {
+            compositeDisposable.dispose()
+        }
+    }
+
+    fun handMoneyItemClick(bean: WithdrawMoneyListAdapter.WithdrawMoneyItem) {
+        if (bean.checked) {
+            return
+        }
+        val oldList = _moneyItems.value!!
+        val newList = mutableListOf<WithdrawMoneyListAdapter.WithdrawMoneyItem>()
+        for (item in oldList) {
+            when {
+                item == bean -> newList.add(item.copy(checked = true))
+                item.checked -> newList.add(item.copy(checked = false))
+                else -> newList.add(item)
+            }
+        }
+        _moneyItems.value = newList
+    }
+
+    fun checkWithdrawBtnText() {
+        if (target < System.currentTimeMillis()) {
+            _btnText.value = Utils.getApp().getString(R.string.withdraw_withdraw_right_now)
+        } else {
+            // 开启倒计时显示
+            val disposable = Observable.interval(0, 1, TimeUnit.SECONDS)
+                    .map {
+                        val interval = target - System.currentTimeMillis()
+                        if (interval / 1000 > 0) {
+                            interval.toMinuteSecondFormat() + Utils.getApp().getString(R.string.withdraw_withdraw_later)
+                        } else {
+                            throw Exception() // 这里是为了中断 interval 定时器过程
+                        }
+                    }.io2main().subscribe({
+                        _btnText.value = it
+                    }, {
+                        _btnText.value = Utils.getApp().getString(R.string.withdraw_withdraw_right_now)
+                    })
+            compositeDisposable.add(disposable)
+        }
+    }
+
+    fun withdraw(activity: Activity, settlementAgreementChecked: Boolean, adPosition: String) {
+        if (!userRepository.isWxBind()) {
+            _showBindWxDialog.value = true
+            return
+        }
+        if (!settlementAgreementChecked) {
+            _toast.value = Utils.getApp().getString(R.string.withdraw_please_agree_settlement_agreement)
+            return
+        }
+        val currentAsset = _assets.value ?: 0L
+        val needAsset = _moneyItems.value!!.find { it.checked }!!.price
+        if (currentAsset < needAsset) {
+            _toast.value = Utils.getApp().getString(R.string.withdraw_no_sufficient_funds)
+            return
+        }
+        if (!TextUtils.isEmpty(CacheUtils.getStringByDay(KEY_HAS_WITHDRAWN_TODAY))) {
+            // 今日已提现
+            _toast.value = Utils.getApp().getString(R.string.withdraw_today_withdrawn)
+            return
+        }
+        // 终于可以去提现了
+        val rewardRequestBean = RewardRequestBean(
+                activity = activity,
+                adPosition = adPosition,
+                coinNum = needAsset.toInt(),
+                compositeDisposable = compositeDisposable,
+                chainEndCallback = {
+                    loadAssets()
+                    getTodayEarningCoin()
+                },
+        )
+        val rewardVideoAdLoadAndShowHandler = RewardVideoAdLoadAndShowNormalHandler()
+        val withdrawHandler = WithdrawHandler()
+        val withdrawSuccessDialogHandler = WithdrawSuccessDialogHandler()
+
+        rewardVideoAdLoadAndShowHandler.successor = withdrawHandler
+        withdrawHandler.successor = withdrawSuccessDialogHandler
+
+        rewardVideoAdLoadAndShowHandler.handleRequest(rewardRequestBean)
+    }
+
+    fun onShowBindWxDialogDone() {
+        _showBindWxDialog.value = false
+    }
+
+    fun forceGetTodayEarningCoin() {
+        userRepository.invalidateCache()
+        getTodayEarningCoin()
+    }
+
+    companion object {
+        private const val TAG = "WithdrawViewModel"
+    }
+}
+package cc.buqianjin.client.ui.splash
+
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Handler
+import android.view.View
+import androidx.activity.viewModels
+import androidx.core.app.ActivityCompat
+import cc.buqianjin.client.MyApp
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.SplashActivityBinding
+import cc.buqianjin.client.ui.main.MainActivity
+import cc.buqianjin.client.util.AppConst.Placement.Companion.SPLASH
+import cc.buqianjin.client.util.InjectUtil
+import cc.buqianjin.client.util.initAfterUserAgreedPrivacy
+import cc.buqianjin.client.util.isSplashPrivacyAgreed
+import com.android.base.vm.BaseActivity
+import com.android.base.vm.NoViewModel
+import com.android.reward.auth.DeviceManager
+import com.litre.openad.ad.LitreSplashAd
+import com.litre.openad.para.LitreRequest
+import com.litre.openad.stamp.splash.LitreSplashListener
+import com.litre.openad.utils.UIUtils
+import java.util.concurrent.TimeUnit
+
+class SplashActivity : BaseActivity<NoViewModel, SplashActivityBinding>() {
+
+    private var litreSplashAd: LitreSplashAd? = null
+    private val handler = Handler()
+    private var isSplashLoaded = false
+    private var isAdClick = false
+    private val runnable = Runnable {
+        if (isSplashLoaded) {
+            return@Runnable
+        }
+        launchMainPage()
+    }
+
+    override fun getLayoutId() = R.layout.splash_activity
+
+    private var isBroughtToFornt = false
+
+    private var canJump = false;
+
+    private var countDownTimer: CountDownTimer? = null
+
+    private val model by viewModels<SplashViewModel> { InjectUtil.getSplashModelFactory() }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (isSplashPrivacyAgreed) {
+            // 注释掉的原因：从外部打开应用内的页面都要经由 SplashActivity，但是这种情况在这里会进入 if，导致不能跳转到目标页面。
+            if (intent.flags and Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT !== 0) {
+                isBroughtToFornt = true
+                normalSplash()
+                return
+            }
+            model.login()
+            normalSplash()
+        } else {
+            SplashAgreementAndPolicyFragment.show(this)
+        }
+
+    }
+
+    private fun normalSplash() {
+        // 延时 1s 再加载广告，防止异常 please exec TTAdSdk.init before load ad
+        binding.ivLogo.postDelayed({ loadSplash() }, 1000L)
+        handler.postDelayed(runnable, SPLASH_MAX_DURATION_IN_MILLIS)
+        startSplashCountDownTimer()
+    }
+
+    private fun startSplashCountDownTimer() {
+        countDownTimer = object: CountDownTimer(SPLASH_MAX_DURATION_IN_MILLIS, 1000L) {
+            override fun onFinish() {
+
+            }
+
+            override fun onTick(millisUntilFinished: Long) {
+                val secondUntilFinished = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished)
+                binding?.tvCountDownSeconds?.text = secondUntilFinished.toString()
+                if (secondUntilFinished < 3L)  {
+                    binding?.llCountDown?.setOnClickListener { launchMainPage() }
+                }
+            }
+        }.start()
+    }
+
+    override fun onBackPressed() {
+//        super.onBackPressed()
+    }
+
+    fun launchMainPage() {
+        if (!isBroughtToFornt) {
+            MainActivity.start(this)
+        }
+        finish()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (canJump) {
+            next()
+        }
+        canJump = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        canJump = false
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        countDownTimer?.cancel()
+    }
+
+    private operator fun next() {
+        if (canJump) {
+            launchMainPage()
+        } else {
+            canJump = true
+        }
+    }
+
+    private fun loadSplash() {
+        val adHeight: Int = UIUtils.getScreenHeight() - binding.ivLogo.height
+        val adRequest = LitreRequest.Builder() //必须项，必须是activity对象
+                .Contenxt(this) //必须项,加载广告的父布局
+                .adRoot(binding.llAdContainer) //必须项,广告宽高尺寸，单位px
+                .size(intArrayOf(UIUtils.getScreenWidth(), adHeight)) //必须项,配置的广告位名称
+                .position(SPLASH)
+                .build()
+        litreSplashAd = LitreSplashAd(adRequest).apply {
+            setListener(object : LitreSplashListener() {
+                override fun onLoaded(view: View?) {
+                    // Utils.setLastLaunchTime(System.currentTimeMillis())
+                    //广告加载成功回调,返回的view不可靠，可能为空
+                    isSplashLoaded = true
+                    binding.llCountDown.visibility = View.GONE
+                    handler.removeCallbacks(runnable)
+                    if (splashFragment != null) {
+                        supportFragmentManager.beginTransaction()
+                                .replace(R.id.ll_ad_container, splashFragment)
+                                .commitAllowingStateLoss()
+                    }
+                }
+
+                override fun onTimeOut() {
+                    launchMainPage()
+                    //广告加载超时
+                }
+
+                override fun onAdTimeOver() {
+                    launchMainPage()
+                    //开屏广告倒计时时间结束
+                }
+
+                override fun onAdSkip() {
+                    super.onAdSkip()
+                    launchMainPage()
+                    //用户点击了跳过按钮
+                }
+
+                override fun onAdClick() {
+                    super.onAdClick()
+                    isAdClick = true
+                }
+            })
+            //请求广告
+            load()
+        }
+    }
+
+    fun onPrivacyAgreed() {
+        // 申请 READ_PHONE_STATE 权限
+        when {
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED -> {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE), REQUEST_CODE_READ_PHONE_STATE)
+            }
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED -> {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE_READ_EXTERNAL_STORAGE_STATE)
+            }
+            else -> {
+                initAfterUserAgreedPrivacy(MyApp.getApp())
+                model.login()
+                normalSplash()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_READ_PHONE_STATE) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE_READ_EXTERNAL_STORAGE_STATE)
+            }
+            // 请求授权后，再次去设置 IMEI 值。
+            DeviceManager.get().checkTel()
+        } else if (requestCode == REQUEST_CODE_READ_EXTERNAL_STORAGE_STATE) {
+            initAfterUserAgreedPrivacy(MyApp.getApp())
+            model.login()
+            normalSplash()
+        }
+    }
+
+    companion object {
+        private const val REQUEST_CODE_READ_PHONE_STATE = 1
+        private const val REQUEST_CODE_READ_EXTERNAL_STORAGE_STATE = 2
+        private const val SPLASH_MAX_DURATION_IN_MILLIS = 5000L
+        @JvmStatic
+        fun start(context: Context) {
+            val starter = Intent(context, SplashActivity::class.java).apply {
+                if (context !is Activity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(starter)
+        }
+    }
+}
+package cc.buqianjin.client.ui.splash
+
+import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentActivity
+import cc.buqianjin.client.R
+import cc.buqianjin.client.databinding.SplashAgreementAndPolicyFragmentBinding
+import cc.buqianjin.client.ui.common.KEY_FIRST_ENTER_TIMESTAMP
+import cc.buqianjin.client.ui.common.KEY_IS_AGREED
+import cc.buqianjin.client.ui.mine.WebViewActivity
+import cc.buqianjin.client.util.AppConst
+import cc.buqianjin.client.util.UmengUtils
+import com.android.base.util.SPUtils
+import com.android.base.util.Utils
+
+class SplashAgreementAndPolicyFragment : DialogFragment(), View.OnClickListener {
+    private var _binding: SplashAgreementAndPolicyFragmentBinding? = null
+    private val binding get() = _binding!!
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        setupFullScreen(this)
+        _binding = SplashAgreementAndPolicyFragmentBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 不可以通过 back 键取消
+        isCancelable = false
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.tvSplashDesc.text = Utils.getApp().getString(R.string.splash_agreement_and_policy_fragment_desc,
+                Utils.getApp().getString(R.string.app_name))
+        setupItems()
+        setupDetails()
+        setupListeners()
+    }
+
+    private fun setupListeners() {
+        binding.tvSplashDisagree.setOnClickListener(this)
+        binding.tvSplashAgree.setOnClickListener(this)
+    }
+
+    private fun setupDetails() {
+        val lookForDetails = getString(R.string.splash_agreement_and_policy_fragment_look_for_details)
+        val userAgreement = getString(R.string.splash_agreement_and_policy_fragment_user_agreement)
+        val and = getString(R.string.splash_agreement_and_policy_fragment_and)
+        val privacyPolicy = getString(R.string.splash_agreement_and_policy_fragment_privacy_policy)
+        val text = lookForDetails + userAgreement + and + privacyPolicy
+        val spannable = SpannableString(text)
+        spannable.setSpan(object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                WebViewActivity.start(Utils.getApp(), Utils.getApp().resources.getString(R.string.user_agreement_title), AppConst.URL_USER_AGREEMENT)
+            }
+        }, lookForDetails.length, (lookForDetails + userAgreement).length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                WebViewActivity.start(Utils.getApp(), Utils.getApp().resources.getString(R.string.privacy_policy_title), AppConst.URL_PRIVACY_POLICY)
+            }
+        },
+                (lookForDetails + userAgreement + and).length, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        binding.tvSplashLookForDetails.text = spannable
+        binding.tvSplashLookForDetails.movementMethod = LinkMovementMethod.getInstance()
+    }
+
+    private fun setupItems() {
+        binding.itemLocation.apply {
+            ivSplashItemIcon.setImageResource(R.drawable.splash_agreement_and_privacy_item_location)
+            tvSplashItemTitle.setText(R.string.splash_agreement_and_policy_fragment_item_location_title)
+            tvSplashItemDesc.setText(R.string.splash_agreement_and_policy_fragment_item_location_desc)
+        }
+
+        binding.itemStorage.apply {
+            ivSplashItemIcon.setImageResource(R.drawable.splash_agreement_and_privacy_item_storage)
+            tvSplashItemTitle.setText(R.string.splash_agreement_and_policy_fragment_item_storage_title)
+            tvSplashItemDesc.setText(R.string.splash_agreement_and_policy_fragment_item_storage_desc)
+        }
+
+        binding.itemDevice.apply {
+            ivSplashItemIcon.setImageResource(R.drawable.splash_agreement_and_privacy_item_device)
+            tvSplashItemTitle.setText(R.string.splash_agreement_and_policy_fragment_item_device_title)
+            tvSplashItemDesc.setText(R.string.splash_agreement_and_policy_fragment_item_device_desc)
+        }
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
+    }
+
+    private fun setupFullScreen(dialogFragment: DialogFragment) {
+        // 设置 Dialog 背景透明，全屏显示
+        val dialog = dialogFragment.dialog ?: return
+        val window: Window = dialog.window ?: return
+        window.setBackgroundDrawableResource(R.color.splash_agreement_and_policy_fragment_bg)
+        window.decorView.setPadding(0, 0, 0, 0)
+        val wlp = window.attributes
+        wlp.gravity = Gravity.CENTER
+        wlp.width = WindowManager.LayoutParams.MATCH_PARENT
+        wlp.height = WindowManager.LayoutParams.MATCH_PARENT
+        window.attributes = wlp
+    }
+
+    companion object {
+
+        private const val TAG = "SplashAgreementAndPolic"
+
+        private fun newInstance(): SplashAgreementAndPolicyFragment {
+            val args = Bundle()
+            val fragment = SplashAgreementAndPolicyFragment()
+            fragment.arguments = args
+            return fragment
+        }
+
+        fun show(activity: FragmentActivity) {
+            newInstance().show(activity.supportFragmentManager, TAG)
+        }
+    }
+
+    override fun onClick(v: View) {
+        when (v) {
+            binding.tvSplashDisagree -> {
+                if (activity != null) {
+                    requireActivity().finish()
+                    UmengUtils.log(AppConst.ReportKey.SPLASH_START,"disagree")
+                }
+            }
+            binding.tvSplashAgree -> {
+                UmengUtils.log(AppConst.ReportKey.SPLASH_START,"agree")
+
+                SPUtils.putBoolean(Utils.getApp(), KEY_IS_AGREED, true)
+                SPUtils.instance().put(KEY_FIRST_ENTER_TIMESTAMP, System.currentTimeMillis())
+                dismissAllowingStateLoss()
+                activity?.let {
+                    (it as SplashActivity).onPrivacyAgreed()
+                }
+            }
+        }
+    }
+}
+package cc.buqianjin.client.ui.splash
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.reward.source.UserRepository
+
+class SplashModelFactory(private val repository: UserRepository)
+    : ViewModelProvider.NewInstanceFactory(){
+
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return SplashViewModel(repository) as T
+    }
+}
+package cc.buqianjin.client.ui.splash
+
+import androidx.lifecycle.ViewModel
+import com.android.base.extension.io2main
+import com.android.reward.source.UserRepository
+import com.android.base.util.LogUtils
+import io.reactivex.disposables.CompositeDisposable
+
+class SplashViewModel(private val repository: UserRepository) : ViewModel() {
+    private val compositeDisposable = CompositeDisposable()
+
+    fun login() {
+        compositeDisposable.add(repository.getUserInfo().io2main().subscribe(
+                { t -> LogUtils.d(TAG, "login() success: $t") }, {
+                    LogUtils.e(TAG, "login() fail: $it")
+        }) )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!compositeDisposable.isDisposed) {
+            compositeDisposable.dispose()
+        }
+    }
+
+    companion object {
+        private const val TAG = "SplashViewModel"
     }
 }
