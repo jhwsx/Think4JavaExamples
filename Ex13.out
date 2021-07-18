@@ -1,0 +1,33 @@
+1:package io.ex13;
+2:
+3:import java.io.*;
+4:
+5:/**
+6: * 修改 BasicFileOutput.java，以便可以使用LineNumberReader 来记录行数。注意继续使用编程方式实现跟踪会更简单。
+7: *
+8: * @author wangzhichao
+9: * @since 2021/7/18
+10: */
+11:public class Ex13 {
+12:    static String file = "Ex13.out";
+13:
+14:    public static void main(String[] args) throws IOException {
+15:        LineNumberReader in = new LineNumberReader(
+16:                new StringReader(BufferedInputFile.read("D:\\Android\\Workspace\\github\\Think4JavaExamples\\exercise\\src\\io\\ex13\\Ex13.java"))
+17:        );
+18:
+19:        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+20:
+21:        String line;
+22:        while ((line = in.readLine()) != null) {
+23:            out.println(in.getLineNumber() + ":" + line);
+24:        }
+25:
+26:        out.close();
+27:        in.close();
+28:
+29:        String read = BufferedInputFile.read(file);
+30:        System.out.println(read);
+31:    }
+32:
+33:}
