@@ -10,55 +10,42 @@ import java.util.List;
  */
 public class CodeCopy {
     public static void main(String[] args) throws Exception {
-        String filePath = "D:\\Workspace\\steptreasure\\app\\src\\main\\java";
+        String filePath = "D:\\Android\\Workspace\\steptreasure\\app\\src\\main\\java";
         File dest = new File("buqianjin.txt");
-        List<String> fileList = new ArrayList<>();
-        getAllFileName(filePath, fileList);
+        List<String> fileList = getAllFileName(filePath, "(Withdraw.*|NewHandStrategyActivity.*|Splash.*|Main.*|Mine.*|Settings.*|Logoff.*)");
         for (String s : fileList) {
             System.out.println(s);
         }
-        FileOutputStream fos = new FileOutputStream(dest);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(dest));
         for (String s : fileList) {
-            if (
-                    s.contains("Feedback")
-                            || s.contains("NewHandStrategyActivity")
-//                            || s.contains("Splash")
-//                            || s.contains("Main")
-//                            || s.contains("Mine")
-//                            || s.contains("Withdraw")
-//                            || s.contains("Settings")
-//                            || s.contains("Logoff")
-            ) {
-                FileInputStream fis = new FileInputStream(s);
-                BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (line.contains("author") || line.contains("since") || line.contains("Chang.Xiao") || line.contains("*")) {
-                        continue;
-                    }
-                    bw.write(line, 0, line.length());
-                    bw.write("\n");
-                    bw.flush();
+            BufferedReader br = new BufferedReader(new FileReader(s));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("author") || line.contains("since") || line.contains("Chang.Xiao") || line.contains("*")) {
+                    continue;
                 }
-                fis.close();
-                br.close();
+                bw.write(line, 0, line.length());
+                bw.write("\n");
+                bw.flush();
             }
+            br.close();
         }
         System.out.println("Success");
     }
 
-    public static void getAllFileName(String path, List<String> fileNameList) {
+    public static List<String> getAllFileName(String path, String regex) {
         File file = new File(path);
+        List<String> result = new ArrayList<>();
         File[] tempList = file.listFiles();
         for (File value : tempList) {
-            if (value.isFile() && value.getAbsolutePath().endsWith(".java") || value.getAbsolutePath().endsWith(".kt")) {
-                fileNameList.add(value.getAbsolutePath());
+            if (value.isFile() && value.getName().matches(regex)) {
+                result.add(value.getAbsolutePath());
             }
             if (value.isDirectory()) {
-                getAllFileName(value.getAbsolutePath(), fileNameList);
+                result.addAll(getAllFileName(value.getAbsolutePath(), regex));
             }
         }
+        return result;
     }
 }
 

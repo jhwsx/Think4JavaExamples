@@ -1,0 +1,29 @@
+1:package io;
+2:
+3:import java.io.BufferedReader;
+4:import java.io.IOException;
+5:import java.io.PrintWriter;
+6:import java.io.StringReader;
+7:
+8:/**
+9: * 文本文件输出的快捷方式
+10: *
+11: * @author wangzhichao
+12: * @since 2021/7/17
+13: */
+14:public class FileOutputShortcut {
+15:    static final String file = "FileOutputShortcut.out";
+16:    public static void main(String[] args) throws IOException {
+17:        String read = BufferedInputFile.read("D:\\Android\\Workspace\\github\\Think4JavaExamples\\codes\\src\\io\\FileOutputShortcut.java");
+18:        StringReader stringReader = new StringReader(read);
+19:        BufferedReader bufferedReader = new BufferedReader(stringReader);
+20:        PrintWriter printWriter = new PrintWriter(file);
+21:        String s;
+22:        int lineCount = 1;
+23:        while ((s = bufferedReader.readLine()) != null) {
+24:            printWriter.println(lineCount++ + ":" + s);
+25:        }
+26:        printWriter.close();
+27:        System.out.println(BufferedInputFile.read(file));
+28:    }
+29:}

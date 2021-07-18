@@ -1,0 +1,40 @@
+1:}
+2:    }
+3:        bufferedWriter.close();
+4:        }
+5:            bufferedWriter.newLine();
+6:            bufferedWriter.write(lineCount++ + ":"+s);
+7:        for (String s : lineList) {
+8:        int lineCount = 1;
+9:        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
+10:        }
+11:            System.out.println(s);
+12:        for (String s : lineList) {
+13:        Collections.reverse(lineList);
+14:        bufferedReader.close();
+15:        }
+16:            lineList.add(line);
+17:        while((line = bufferedReader.readLine()) != null) {
+18:        LinkedList<String> lineList = new LinkedList<>();
+19:        String line;
+20:        BufferedReader bufferedReader = new BufferedReader(fileReader);
+21:        FileReader fileReader = new FileReader(args[0]);
+22:        }
+23:            System.exit(1);
+24:            System.err.println("Please input fileName as args");
+25:        if (args.length == 0) {
+26:    public static void main(String[] args) throws IOException {
+27:    static final String file = "Ex12.out";
+28:public class Ex12 {
+29: */
+30: * @since 2021/7/17
+31: * @author wangzhichao
+32: *
+33: * 修改练习8，同样也打开一个文本文件，以便将文本写入其中。将 LinkedList 中的各行随同行号一起写入文件（不要试图使用LineNumber类）。
+34:/**
+35:
+36:import java.util.LinkedList;
+37:import java.util.Collections;
+38:import java.io.*;
+39:
+40:package io.ex12;

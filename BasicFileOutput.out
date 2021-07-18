@@ -1,0 +1,32 @@
+1:package io;
+2:
+3:import java.io.*;
+4:
+5:/**
+6: * @author wangzhichao
+7: * @since 2021/7/17
+8: */
+9:public class BasicFileOutput {
+10:    static String file = "BasicFileOutput.out";
+11:    public static void main(String[] args) throws IOException {
+12:        BufferedReader in = new BufferedReader(
+13:                new StringReader(BufferedInputFile.read("D:\\Android\\Workspace\\github\\Think4JavaExamples\\codes\\src\\io\\BasicFileOutput.java"))
+14:        );
+15:        PrintWriter out = new PrintWriter(
+16:                new BufferedWriter(
+17:                        new FileWriter(file)
+18:                )
+19:        );
+20:        String line;
+21:        int lineCount = 1;
+22:        while((line = in.readLine()) != null) {
+23:            out.println(lineCount++ + ":" + line);
+24:        }
+25:        out.close();
+26:        in.close();
+27:
+28:        String read = BufferedInputFile.read(file);
+29:        System.out.println(read);
+30:    }
+31:
+32:}

@@ -10,6 +10,7 @@ package innerclasses.controller;
  * </pre>
  */
 public abstract class Event {
+    // 触发事件的时间
     private long eventTime;
     protected final long delayTime;
 

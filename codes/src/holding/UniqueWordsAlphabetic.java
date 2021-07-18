@@ -18,7 +18,7 @@ public class UniqueWordsAlphabetic {
     public static void main(String[] args) {
         Set<String> words = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         words.addAll(new TextFile(
-                "G:\\AndroidWorkspaces\\Think4JavaExamples\\app\\src\\main\\java\\holding\\SetOperations.java",
+                "D:\\Android\\Workspace\\github\\Think4JavaExamples\\codes\\src\\holding\\SetOperations.java",
                 "\\W+")
         );
         System.out.println(words);

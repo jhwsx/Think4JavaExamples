@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 public class DirList {
     // 参数：D.*\.java
+    // T.*\.txt 以 T 开头并且以 .txt 结尾的文件
     public static void main(String[] args) {
         // 文件目录
         File path = new File(".");
