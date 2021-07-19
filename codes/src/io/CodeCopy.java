@@ -25,7 +25,7 @@ public class CodeCopy {
                     continue;
                 }
                 bw.write(line, 0, line.length());
-                bw.write("\n");
+                bw.newLine();
                 bw.flush();
             }
             br.close();
