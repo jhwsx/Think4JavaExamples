@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DirList2 {
-    // 匿名内部类的写法
+    // 返回FilenameFilter 的匿名内部类的写法
     public static FilenameFilter filter(final String regex) {
         return new FilenameFilter() {
             @Override

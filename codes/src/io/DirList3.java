@@ -15,6 +15,7 @@ public class DirList3 {
         if (args.length == 0) {
             list = path.list();
         } else {
+            // 定义一个作为 list() 参数的匿名内部类。
             list = path.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {

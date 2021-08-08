@@ -28,7 +28,7 @@ public class DirList {
     }
 
 }
-
+// 这是策略模式的应用：完善了 list() 在提供服务时所需的算法。
 class DirFilter implements FilenameFilter {
 
     private Pattern pattern;
