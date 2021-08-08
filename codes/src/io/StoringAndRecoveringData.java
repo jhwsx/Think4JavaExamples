@@ -3,6 +3,10 @@ package io;
 import java.io.*;
 
 /**
+ * 存储和恢复数据
+ *
+ * 为了输出可供另一个“流”恢复的数据，我们需要用 DataOutputStream 写入数据，并用 DataInputStream 恢复数据。
+ *
  * @author wangzhichao
  * @since 2021/7/18
  */
@@ -21,7 +25,7 @@ public class StoringAndRecoveringData {
         out.writeUTF("Square root of 2");
         out.close();
 
-        // 使用 DataInputStream 读取数据
+        // 使用 DataInputStream 读取数据，恢复数据
         DataInputStream in = new DataInputStream(
                 new BufferedInputStream(
                         new FileInputStream(file)

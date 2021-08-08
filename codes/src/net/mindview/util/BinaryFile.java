@@ -13,6 +13,7 @@ public class BinaryFile {
                 new FileInputStream(bFile));
         try {
             // 使用 available() 方法来产生恰当的数组尺寸。厉害啊
+            // 文件如果太大，不要用这种方法来写。
             byte[] data = new byte[bf.available()];
             bf.read(data);
             return data;

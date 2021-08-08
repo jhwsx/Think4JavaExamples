@@ -30,6 +30,7 @@ public class CodeCopy {
             }
             br.close();
         }
+        bw.close();
         System.out.println("Success");
     }
 

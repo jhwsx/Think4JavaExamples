@@ -8,6 +8,7 @@ public class OSExecute {
   public static void command(String command) {
     boolean err = false;
     try {
+        // ProcessBuilder 用于创建操作系统进程
       Process process =
         new ProcessBuilder(command.split(" ")).start();
       BufferedReader results = new BufferedReader(
